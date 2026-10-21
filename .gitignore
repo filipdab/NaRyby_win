@@ -1,0 +1,11 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Wyniki kompilacji
+bin/
+obj/
+
+# Gotowa paczka do udostępnienia (budowana lokalnie, patrz README)
+dist/
