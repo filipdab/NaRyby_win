@@ -75,7 +75,7 @@ namespace NaRyby_win
             btnRemove.Click += BtnRemove_Click;
             cmbSpecies = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170, Margin = new Padding(3, 4, 3, 3) };
             foreach (var sp in Species.All) cmbSpecies.Items.Add(sp);
-            cmbSpecies.SelectedIndex = 0;
+            cmbSpecies.SelectedItem = Species.All.FirstOrDefault(sp => sp.Name == "Leszcz") ?? Species.All[0];
             cmbSpecies.SelectedIndexChanged += (s, e) => OnSpeciesChanged();
             txtSearch = new TextBox { Width = 170, Margin = new Padding(3, 5, 3, 3) };
             txtSearch.HandleCreated += (s, e) => SendMessage(txtSearch.Handle, EM_SETCUEBANNER, IntPtr.Zero, "np. Zegrze, Mikołajki");
