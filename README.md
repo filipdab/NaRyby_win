@@ -3,10 +3,10 @@
 # NaRyby – kiedy jechać na ryby?
 
 [![Licencja: MIT](https://img.shields.io/badge/licencja-MIT-green.svg)](LICENSE)
-![Platforma: Windows](https://img.shields.io/badge/platforma-Windows-blue.svg)
+![Platforma: Windows | macOS](https://img.shields.io/badge/platforma-Windows%20%7C%20macOS-blue.svg)
 ![.NET Framework 4.7.2](https://img.shields.io/badge/.NET%20Framework-4.7.2-purple.svg)
 
-Okienkowa aplikacja dla wędkarzy na Windows. Pobiera prognozę pogody dla wybranej
+Okienkowa aplikacja dla wędkarzy na Windows i macOS. Pobiera prognozę pogody dla wybranej
 miejscowości i podpowiada, **kiedy najlepiej jechać na ryby** – ogólnie albo na konkretny
 gatunek: szczupaka, sandacza, okonia, karpia, leszcza, lina, płoć, suma lub bolenia.
 
@@ -20,6 +20,20 @@ najnowsza wersja z zakładki [Releases](https://github.com/filipdab/NaRyby_win/r
 Rozpakuj archiwum i uruchom `NaRyby.exe` – instalacja nie jest potrzebna.
 Przy pierwszym uruchomieniu Windows SmartScreen może ostrzec przed nieznanym wydawcą,
 bo plik nie jest podpisany cyfrowo. Wybierz „Więcej informacji” → „Uruchom mimo to”.
+
+### macOS
+
+Pobierz z [Releases](https://github.com/filipdab/NaRyby_win/releases) archiwum
+`NaRyby-mac-arm64.zip` (Mac z procesorem Apple M1 i nowszym) albo `NaRyby-mac-x64.zip` (Mac z procesorem Intel),
+rozpakuj i przeciągnij `NaRyby.app` do folderu *Aplikacje*. .NET nie trzeba instalować – jest w paczce.
+
+Aplikacja nie jest podpisana certyfikatem Apple, więc przy pierwszym uruchomieniu macOS ją zablokuje.
+Otwórz *Ustawienia systemowe → Prywatność i ochrona* i kliknij „Otwórz mimo to” przy komunikacie o NaRyby
+albo zdejmij blokadę w Terminalu:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/NaRyby.app
+```
 
 ## Funkcje
 
@@ -66,6 +80,7 @@ a algorytm oceny w [`FishingAdvisor.cs`](NaRyby_win/FishingAdvisor.cs).
 ## Wymagania
 
 - Windows 10 (wersja 1803 lub nowsza) albo Windows 11 – wbudowany .NET Framework 4.7.2 wystarcza.
+- macOS 12 Monterey lub nowszy (Apple Silicon albo Intel).
 - Połączenie z internetem.
 
 ## Budowanie
@@ -84,6 +99,23 @@ Program nie potrzebuje dodatkowych bibliotek – wystarczy skopiować oba pliki 
 
 Ikona (`NaRyby_win/NaRyby.ico`) jest generowana skryptem [`tools/make_icon.ps1`](tools/make_icon.ps1).
 
+### macOS
+
+Wersja na macOS (`NaRyby_mac`) korzysta z [Avalonia UI](https://avaloniaui.net/) i .NET 8.
+Logika – pogoda, ocena brań, gatunki i lista miejscowości – to te same pliki co w wersji Windows,
+osobny jest tylko interfejs. Potrzebny jest [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+(np. `brew install --cask dotnet-sdk`).
+
+```bash
+dotnet run --project NaRyby_mac        # uruchomienie z kodu
+./tools/build_mac.sh                   # NaRyby.app + dist/mac/NaRyby-mac-arm64.zip i -x64.zip
+./tools/build_mac.sh arm64             # tylko Apple Silicon
+```
+
+Skrypt buduje samodzielne paczki (z wbudowanym .NET) i podpisuje je podpisem ad-hoc, którego
+wymagają Maki z procesorem Apple. Ikonę macOS (`NaRyby_mac/macos/NaRyby.icns`) generuje
+[`tools/make_icon_mac.py`](tools/make_icon_mac.py).
+
 ## Struktura projektu
 
 | Plik | Zawartość |
@@ -95,7 +127,16 @@ Ikona (`NaRyby_win/NaRyby.ico`) jest generowana skryptem [`tools/make_icon.ps1`]
 | `FishingAdvisor.cs` | ocena warunków i jej uzasadnienie |
 | `Species.cs` | preferencje i porady dla gatunków |
 | `MoonPhase.cs` | fazy Księżyca |
-| `CityStore.cs` | lista miejscowości zapisywana w `%AppData%\NaRyby\miasta.txt` |
+| `CityStore.cs` | lista miejscowości zapisywana w `%AppData%\NaRyby\miasta.txt` (macOS: `~/Library/Application Support/NaRyby/miasta.txt`) |
+
+Wersja macOS (`NaRyby_mac/`) dołącza powyższe pliki logiki i ma własny interfejs:
+
+| Plik | Zawartość |
+|---|---|
+| `MainWindow.cs` | główne okno |
+| `ScoreChart.cs` | wykres godzinowy |
+| `Dialogs.cs` | komunikaty i wybór miejscowości |
+| `macos/Info.plist`, `macos/NaRyby.icns` | opis i ikona pakietu `NaRyby.app` |
 
 ## Dane pogodowe
 
