@@ -12,6 +12,15 @@ gatunek: szczupaka, sandacza, okonia, karpia, leszcza, lina, płoć, suma lub bo
 
 ![Główne okno aplikacji](docs/glowne-okno.png)
 
+## Pobieranie
+
+**[⬇ Pobierz NaRyby.zip](https://github.com/filipdab/NaRyby_win/releases/latest/download/NaRyby.zip)** –
+najnowsza wersja z zakładki [Releases](https://github.com/filipdab/NaRyby_win/releases).
+
+Rozpakuj archiwum i uruchom `NaRyby.exe` – instalacja nie jest potrzebna.
+Przy pierwszym uruchomieniu Windows SmartScreen może ostrzec przed nieznanym wydawcą,
+bo plik nie jest podpisany cyfrowo. Wybierz „Więcej informacji” → „Uruchom mimo to”.
+
 ## Funkcje
 
 - **Prognoza na 7 dni** – ocena brań w skali 0–100, gwiazdki i najlepsze 3-godzinne okno w każdym dniu.
@@ -72,9 +81,6 @@ msbuild NaRyby_win\NaRyby_win.csproj -p:Configuration=Release
 
 Wynik to `NaRyby_win\bin\Release\NaRyby_win.exe` wraz z plikiem `NaRyby_win.exe.config`.
 Program nie potrzebuje dodatkowych bibliotek – wystarczy skopiować oba pliki na inny komputer.
-
-Przy pierwszym uruchomieniu Windows SmartScreen może ostrzec przed nieznanym wydawcą,
-bo plik nie jest podpisany cyfrowo. Wybierz „Więcej informacji” → „Uruchom mimo to”.
 
 Ikona (`NaRyby_win/NaRyby.ico`) jest generowana skryptem [`tools/make_icon.ps1`](tools/make_icon.ps1).
 
