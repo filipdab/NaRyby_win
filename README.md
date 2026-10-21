@@ -2,86 +2,100 @@
 
 # NaRyby – kiedy jechać na ryby?
 
+[![Licencja: MIT](https://img.shields.io/badge/licencja-MIT-green.svg)](LICENSE)
+![Platforma: Windows](https://img.shields.io/badge/platforma-Windows-blue.svg)
+![.NET Framework 4.7.2](https://img.shields.io/badge/.NET%20Framework-4.7.2-purple.svg)
+
 Okienkowa aplikacja dla wędkarzy na Windows. Pobiera prognozę pogody dla wybranej
 miejscowości i podpowiada, **kiedy najlepiej jechać na ryby** – ogólnie albo na konkretny
-gatunek (szczupak, sandacz, okoń, karp, leszcz, lin, płoć, sum, boleń).
+gatunek: szczupaka, sandacza, okonia, karpia, leszcza, lina, płoć, suma lub bolenia.
 
-![Główne okno](docs/glowne-okno.png)
+![Główne okno aplikacji](docs/glowne-okno.png)
 
 ## Funkcje
 
-- **Prognoza na 7 dni** z oceną brań 0–100, gwiazdkami i najlepszym 3-godzinnym oknem w każdym dniu.
-- **Rekomendacja** – baner z najlepszym dniem i godziną wyjazdu oraz głównym powodem.
-- **Gatunki ryb** – ocena i porady dopasowane do wybranego gatunku; kolumna „Na co łowić”
+- **Prognoza na 7 dni** – ocena brań w skali 0–100, gwiazdki i najlepsze 3-godzinne okno w każdym dniu.
+- **Rekomendacja** – baner z najlepszym dniem i porą wyjazdu oraz głównym powodem.
+- **Gatunki ryb** – ocena i porady dopasowane do wybranego gatunku. Kolumna „Na co łowić”
   pokazuje gatunki z najlepszą prognozą na dany dzień.
-- **Wykres godzinowy** – ocena brań, ciśnienie, noc i najlepsze okno; po najechaniu na słupek
-  widać pogodę w danej godzinie.
-- **Porady** – przynęty, miejsca, zachowanie ryb, porada zależna od temperatury wody
-  i informacja o okresie ochronnym.
-- **Dowolne miejscowości** – wyszukiwarka dodaje dowolne miejsce (jezioro, wieś, miasto);
-  lista jest zapamiętywana. Domyślnie: Arciechów koło Radzymina.
-- Automatyczne odświeżanie co 30 minut.
+- **Wykres godzinowy** – ocena brań, ciśnienie, pora nocna i najlepsze okno. Po najechaniu
+  na słupek widać pogodę w danej godzinie.
+- **Porady** – przynęty, łowiska, zachowanie ryb, wskazówka zależna od temperatury wody
+  oraz informacja o okresie ochronnym.
+- **Dowolne miejscowości** – wyszukiwarka dodaje jezioro, wieś lub miasto, a lista jest
+  zapamiętywana. Domyślna lokalizacja: Arciechów koło Radzymina.
+- **Automatyczne odświeżanie** co 30 minut.
 
-| Ocena dnia dla gatunku | Porady dla gatunku |
+| Ocena dnia dla wybranego gatunku | Porady dla wybranego gatunku |
 |---|---|
 | ![Ocena dnia – szczupak](docs/szczupak-ocena.png) | ![Porady – szczupak](docs/szczupak-porady.png) |
 
 ## Jak liczona jest ocena
 
-Każda godzina dostaje punkty według popularnej wiedzy wędkarskiej:
+Każda godzina dostaje punkty na podstawie popularnej wiedzy wędkarskiej:
 
-| Czynnik | Wpływ |
+| Czynnik | Wpływ na ocenę |
 |---|---|
-| Ciśnienie | stabilne lub powoli spadające – plus; gwałtowne zmiany – minus |
-| Wiatr | umiarkowany – plus (drapieżniki), cisza – plus dla lina; silny i porywisty – minus |
-| Kierunek wiatru | zachodni / południowo-zachodni – plus, wschodni – minus |
-| Temperatura wody | zgodna z preferencjami gatunku – plus; za zimna / za ciepła – minus |
-| Opady | mżawka – plus, ulewa – minus, burza – duży minus |
-| Pora dnia | świt i zmierzch – plus; noc lub południe zależnie od gatunku |
-| Zachmurzenie | pochmurno – plus dla drapieżników |
-| Sezon | szczyt sezonu danego gatunku – plus; okres ochronny – ocena 0 |
-| Księżyc | nów i pełnia – plus |
+| Ciśnienie | stabilne lub powoli spadające podnosi ocenę, gwałtowne zmiany ją obniżają |
+| Wiatr | umiarkowany sprzyja drapieżnikom, cisza – linowi; silny i porywisty obniża ocenę |
+| Kierunek wiatru | zachodni i południowo-zachodni sprzyja, wschodni przeszkadza |
+| Temperatura wody | zgodna z preferencjami gatunku podnosi ocenę, za zimna lub za ciepła obniża |
+| Opady | mżawka sprzyja, ulewa przeszkadza, burza mocno obniża ocenę |
+| Pora dnia | świt i zmierzch sprzyjają; noc i południe zależnie od gatunku |
+| Zachmurzenie | pochmurne niebo sprzyja drapieżnikom |
+| Sezon | szczyt sezonu podnosi ocenę; w okresie ochronnym ocena wynosi 0 |
+| Księżyc | nów i pełnia podnoszą ocenę |
 
-Temperatura wody nie jest mierzona – jest szacowana ze średniej temperatury powietrza
-z ostatnich 3 dni. Wagi poszczególnych gatunków są w [`Species.cs`](NaRyby_win/Species.cs),
-a algorytm w [`FishingAdvisor.cs`](NaRyby_win/FishingAdvisor.cs).
+Temperatura wody nie jest mierzona, tylko szacowana ze średniej temperatury powietrza
+z ostatnich 3 dni. Preferencje gatunków są w [`Species.cs`](NaRyby_win/Species.cs),
+a algorytm oceny w [`FishingAdvisor.cs`](NaRyby_win/FishingAdvisor.cs).
 
+> [!NOTE]
 > Ocena to szacunek, a nie gwarancja brań. Okresy ochronne mają charakter informacyjny –
 > zawsze sprawdź aktualne przepisy i regulamin swojego okręgu PZW.
 
 ## Wymagania
 
-- Windows 10 (1803+) lub Windows 11 – wbudowany .NET Framework 4.7.2 wystarcza.
+- Windows 10 (wersja 1803 lub nowsza) albo Windows 11 – wbudowany .NET Framework 4.7.2 wystarcza.
 - Połączenie z internetem.
 
 ## Budowanie
 
-Otwórz `NaRyby_win.slnx` w Visual Studio i uruchom (F5) albo z wiersza poleceń:
+Sklonuj repozytorium, otwórz `NaRyby_win.slnx` w Visual Studio i uruchom (F5).
+Wersję do udostępnienia zbudujesz z *Developer PowerShell for Visual Studio*:
 
 ```powershell
-& "C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" `
-    NaRyby_win\NaRyby_win.csproj -p:Configuration=Release
+git clone https://github.com/filipdab/NaRyby_win.git
+cd NaRyby_win
+msbuild NaRyby_win\NaRyby_win.csproj -p:Configuration=Release
 ```
 
-Wynik: `NaRyby_win\bin\Release\NaRyby_win.exe` – pojedynczy plik (plus `.exe.config`),
-bez dodatkowych bibliotek, gotowy do skopiowania na inny komputer.
+Wynik to `NaRyby_win\bin\Release\NaRyby_win.exe` wraz z plikiem `NaRyby_win.exe.config`.
+Program nie potrzebuje dodatkowych bibliotek – wystarczy skopiować oba pliki na inny komputer.
+
+Przy pierwszym uruchomieniu Windows SmartScreen może ostrzec przed nieznanym wydawcą,
+bo plik nie jest podpisany cyfrowo. Wybierz „Więcej informacji” → „Uruchom mimo to”.
 
 Ikona (`NaRyby_win/NaRyby.ico`) jest generowana skryptem [`tools/make_icon.ps1`](tools/make_icon.ps1).
 
-## Struktura
+## Struktura projektu
 
 | Plik | Zawartość |
 |---|---|
 | `MainForm.cs` | główne okno |
 | `ScoreChart.cs` | wykres godzinowy |
-| `CityPickerForm.cs` | wybór miejscowości przy wielu wynikach wyszukiwania |
+| `CityPickerForm.cs` | wybór miejscowości, gdy wyszukiwanie zwróci kilka wyników |
 | `WeatherService.cs` | pobieranie prognozy i wyszukiwanie miejscowości (Open-Meteo) |
-| `FishingAdvisor.cs` | ocena warunków i uzasadnienia |
+| `FishingAdvisor.cs` | ocena warunków i jej uzasadnienie |
 | `Species.cs` | preferencje i porady dla gatunków |
 | `MoonPhase.cs` | fazy Księżyca |
-| `CityStore.cs` | lista miejscowości w `%AppData%\NaRyby\miasta.txt` |
+| `CityStore.cs` | lista miejscowości zapisywana w `%AppData%\NaRyby\miasta.txt` |
 
-## Dane
+## Dane pogodowe
 
-Prognoza pogody i wyszukiwanie miejscowości: [Open-Meteo.com](https://open-meteo.com/)
-(licencja [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)). Nie wymaga klucza API.
+Prognoza pogody i wyszukiwanie miejscowości pochodzą z [Open-Meteo.com](https://open-meteo.com/)
+(licencja [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)). Usługa nie wymaga klucza API.
+
+## Licencja
+
+Projekt jest udostępniony na licencji [MIT](LICENSE).
