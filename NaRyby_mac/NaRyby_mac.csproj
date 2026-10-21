@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Wersja NaRyby na macOS (Avalonia UI, .NET 8).
+    Logika (pogoda, ocena brań, gatunki, lista miejscowości) jest współdzielona z wersją Windows –
+    pliki są dołączone z katalogu NaRyby_win, tu jest tylko interfejs.
+  -->
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>NaRyby</AssemblyName>
+    <RootNamespace>NaRyby_mac</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Product>NaRyby</Product>
+    <Authors>Filip Dąbrowski</Authors>
+    <ApplicationIcon>../NaRyby_win/NaRyby.ico</ApplicationIcon>
+    <!-- ServicePointManager we wspólnym WeatherService jest potrzebny tylko na .NET Framework. -->
+    <NoWarn>$(NoWarn);SYSLIB0014</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../NaRyby_win/Models.cs" Link="Shared/Models.cs" />
+    <Compile Include="../NaRyby_win/MoonPhase.cs" Link="Shared/MoonPhase.cs" />
+    <Compile Include="../NaRyby_win/CityStore.cs" Link="Shared/CityStore.cs" />
+    <Compile Include="../NaRyby_win/WeatherService.cs" Link="Shared/WeatherService.cs" />
+    <Compile Include="../NaRyby_win/FishingAdvisor.cs" Link="Shared/FishingAdvisor.cs" />
+    <Compile Include="../NaRyby_win/Species.cs" Link="Shared/Species.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**" />
+    <None Include="macos/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+  </ItemGroup>
+
+</Project>

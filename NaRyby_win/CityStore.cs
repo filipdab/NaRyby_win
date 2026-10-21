@@ -3,20 +3,29 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace NaRyby_win
 {
     /// <summary>
-    /// Lista ulubionych miejscowości zapisywana w %AppData%\NaRyby\miasta.txt.
+    /// Lista ulubionych miejscowości zapisywana w %AppData%\NaRyby\miasta.txt
+    /// (na macOS: ~/Library/Application Support/NaRyby/miasta.txt).
     /// </summary>
     public class CityStore
     {
         private const string LastPrefix = "#last=";
         private const string SpeciesPrefix = "#species=";
 
-        private readonly string _path = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NaRyby", "miasta.txt");
+        private readonly string _path = Path.Combine(DataFolder(), "NaRyby", "miasta.txt");
+
+        private static string DataFolder()
+        {
+            // Na macOS ApplicationData wskazuje ~/.config, a aplikacje trzymają dane w Application Support.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support");
+            return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        }
 
         public CityStore()
         {

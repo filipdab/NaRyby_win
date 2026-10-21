@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="NaRyby_win/NaRyby_win.csproj" />
+  <Project Path="NaRyby_mac/NaRyby_mac.csproj" />
 </Solution>
