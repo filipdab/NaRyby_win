@@ -30,6 +30,8 @@ namespace NaRyby_win
         private Button btnRemove;
         private TextBox txtSearch;
         private Button btnAdd;
+        private Button btnCompare;
+        private Button btnShare;
         private Label lblRecommendation;
         private Label lblCurrent;
         private DataGridView grid;
@@ -87,10 +89,23 @@ namespace NaRyby_win
             };
             btnAdd = new Button { Text = "Szukaj i dodaj", AutoSize = true };
             btnAdd.Click += async (s, e) => await AddCityAsync();
+            btnCompare = new Button { Text = "Porównaj łowiska", AutoSize = true };
+            btnCompare.Click += async (s, e) => await CompareSpotsAsync();
+            var btnProtection = new Button { Text = "Okresy ochronne", AutoSize = true };
+            btnProtection.Click += (s, e) => ProtectionForm.ShowProtection(this);
+            btnShare = new Button { Text = "Udostępnij ▾", AutoSize = true };
+            var shareMenu = new ContextMenuStrip();
+            shareMenu.Items.Add("Kopiuj prognozę jako tekst", null, (s, e) => CopyForecastText());
+            shareMenu.Items.Add("Kopiuj obraz okna", null, (s, e) => CopyWindowImage());
+            shareMenu.Items.Add("Zapisz obraz okna (PNG)...", null, (s, e) => SaveWindowImage());
+            btnShare.Click += (s, e) => shareMenu.Show(btnShare, new Point(0, btnShare.Height));
+            var btnAbout = new Button { Text = "ⓘ O mnie", AutoSize = true };
+            btnAbout.Click += (s, e) => AboutForm.ShowAbout(this);
 
             top.Controls.Add(MakeLabel("Miejscowość:"));
             top.Controls.Add(cmbCity);
             top.Controls.Add(btnRemove);
+            top.Controls.Add(btnCompare);
             top.Controls.Add(new Label { Width = 12 });
             top.Controls.Add(MakeLabel("Dodaj miejscowość:"));
             top.Controls.Add(txtSearch);
@@ -99,6 +114,19 @@ namespace NaRyby_win
             top.Controls.Add(MakeLabel("Gatunek ryby:"));
             top.Controls.Add(cmbSpecies);
             top.Controls.Add(btnRefresh);
+            top.Controls.Add(new Label { Width = 12 });
+            top.Controls.Add(btnProtection);
+            top.Controls.Add(btnShare);
+            top.Controls.Add(btnAbout);
+
+            // F1 – okno „O mnie”.
+            KeyPreview = true;
+            KeyDown += (s, e) =>
+            {
+                if (e.KeyCode != Keys.F1) return;
+                e.Handled = true;
+                AboutForm.ShowAbout(this);
+            };
 
             // Baner z rekomendacją.
             lblRecommendation = new Label
@@ -213,7 +241,8 @@ namespace NaRyby_win
             g.Columns.Add("score", "Wynik");
             g.Columns.Add("best", "Najlepsza pora");
             g.Columns.Add("species", "Na co łowić");
-            g.Columns.Add("temp", "Temp.");
+            g.Columns.Add("temp", "Temp. powietrza");
+            g.Columns.Add("water", "Temp. wody");
             g.Columns.Add("wind", "Wiatr max");
             g.Columns.Add("rain", "Opady");
             g.Columns.Add("pressure", "Ciśnienie");
@@ -353,6 +382,8 @@ namespace NaRyby_win
             btnRefresh.Enabled = !busy;
             btnRemove.Enabled = !busy;
             btnAdd.Enabled = !busy;
+            btnCompare.Enabled = !busy;
+            btnShare.Enabled = !busy;
             txtSearch.Enabled = !busy;
             if (status != null) lblStatus.Text = status;
         }
@@ -392,6 +423,7 @@ namespace NaRyby_win
                     d.BestWindowText,
                     string.Join(", ", d.SpeciesRanking.Take(3).Select(x => x.Species.Name)),
                     string.Format("{0:0}° / {1:0}°C", d.TempMin, d.TempMax),
+                    string.Format("ok. {0:0}°C", d.WaterTemperature),
                     string.Format("{0:0} km/h", d.WindMax),
                     string.Format("{0:0.#} mm", d.PrecipitationSum),
                     string.Format("{0:0} hPa {1}", d.Hours.Average(h => h.Pressure), arrow));
@@ -525,10 +557,61 @@ namespace NaRyby_win
 
         private static string DayName(DateTime date, DateTime now)
         {
-            string name = date.ToString("dddd d.MM", Polish);
-            if (date == now.Date) return "Dziś, " + name;
-            if (date == now.Date.AddDays(1)) return "Jutro, " + name;
-            return char.ToUpper(name[0]) + name.Substring(1);
+            return Reports.DayName(date, now);
+        }
+
+        #endregion
+
+        #region Porównanie łowisk i udostępnianie
+
+        private async Task CompareSpotsAsync()
+        {
+            var chosen = CompareForm.ShowCompare(this, _weather, _store.Cities.ToList(), SelectedSpecies);
+            if (chosen == null || chosen == cmbCity.SelectedItem) return;
+            RefreshCityList(chosen);
+            await LoadForecastAsync();
+        }
+
+        private void CopyForecastText()
+        {
+            if (_forecast == null) return;
+            Clipboard.SetText(Reports.ForecastText(_forecast, SelectedSpecies));
+            lblStatus.Text = "Skopiowano prognozę do schowka – wklej ją w komunikatorze lub e-mailu.";
+        }
+
+        private Bitmap CaptureWindow()
+        {
+            var bmp = new Bitmap(ClientSize.Width, ClientSize.Height);
+            DrawToBitmap(bmp, new Rectangle(Point.Empty, ClientSize));
+            return bmp;
+        }
+
+        private void CopyWindowImage()
+        {
+            using (var bmp = CaptureWindow())
+            {
+                Clipboard.SetImage(bmp);
+            }
+            lblStatus.Text = "Skopiowano obraz okna do schowka.";
+        }
+
+        private void SaveWindowImage()
+        {
+            var city = cmbCity.SelectedItem as City;
+            using (var dlg = new SaveFileDialog
+            {
+                Title = "Zapisz obraz prognozy",
+                Filter = "Obraz PNG (*.png)|*.png",
+                FileName = string.Format("NaRyby {0} {1:yyyy-MM-dd}.png", city != null ? city.Name : "", DateTime.Now)
+            })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK) return;
+                using (var bmp = CaptureWindow())
+                {
+                    bmp.Save(dlg.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                }
+                lblStatus.Text = "Zapisano obraz: " + dlg.FileName;
+            }
         }
 
         #endregion

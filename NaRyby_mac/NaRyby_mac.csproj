@@ -28,6 +28,7 @@
     <Compile Include="../NaRyby_win/WeatherService.cs" Link="Shared/WeatherService.cs" />
     <Compile Include="../NaRyby_win/FishingAdvisor.cs" Link="Shared/FishingAdvisor.cs" />
     <Compile Include="../NaRyby_win/Species.cs" Link="Shared/Species.cs" />
+    <Compile Include="../NaRyby_win/Reports.cs" Link="Shared/Reports.cs" />
   </ItemGroup>
 
   <ItemGroup>

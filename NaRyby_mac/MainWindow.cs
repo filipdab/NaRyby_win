@@ -11,7 +11,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using NaRyby_win;
 
@@ -22,7 +24,7 @@ namespace NaRyby_mac
         private static readonly CultureInfo Polish = new CultureInfo("pl-PL");
 
         // Szerokości kolumn tabeli dni (jak FillWeight w wersji Windows).
-        private const string DayColumns = "150*,90*,55*,95*,150*,100*,100*,100*,100*";
+        private const string DayColumns = "150*,90*,55*,95*,150*,110*,90*,100*,100*,100*";
 
         private readonly WeatherService _weather = new WeatherService();
         private readonly CityStore _store = new CityStore();
@@ -36,6 +38,8 @@ namespace NaRyby_mac
         private Button btnRemove;
         private TextBox txtSearch;
         private Button btnAdd;
+        private Button btnCompare;
+        private Button btnShare;
         private Border bannerRecommendation;
         private TextBlock lblRecommendation;
         private TextBlock lblCurrent;
@@ -93,10 +97,26 @@ namespace NaRyby_mac
             txtSearch.AddHandler(KeyDownEvent, new EventHandler<KeyEventArgs>(TxtSearch_KeyDown), RoutingStrategies.Tunnel);
             btnAdd = MakeButton("Szukaj i dodaj");
             btnAdd.Click += async (s, e) => await AddCityAsync();
+            btnCompare = MakeButton("Porównaj łowiska");
+            btnCompare.Click += async (s, e) => await CompareSpotsAsync();
+            var btnProtection = MakeButton("Okresy ochronne");
+            btnProtection.Click += async (s, e) => await ProtectionWindow.ShowProtection(this);
+            btnShare = MakeButton("Udostępnij ▾");
+            var copyText = new MenuItem { Header = "Kopiuj prognozę jako tekst" };
+            copyText.Click += async (s, e) => await CopyForecastTextAsync();
+            var saveImage = new MenuItem { Header = "Zapisz obraz okna (PNG)..." };
+            saveImage.Click += async (s, e) => await SaveWindowImageAsync();
+            var shareMenu = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
+            shareMenu.Items.Add(copyText);
+            shareMenu.Items.Add(saveImage);
+            btnShare.Flyout = shareMenu;
+            var btnAbout = MakeButton("ⓘ O mnie");
+            btnAbout.Click += async (s, e) => await AboutWindow.ShowAbout(this);
 
             top.Children.Add(MakeLabel("Miejscowość:"));
             top.Children.Add(cmbCity);
             top.Children.Add(btnRemove);
+            top.Children.Add(btnCompare);
             top.Children.Add(new Control { Width = 12 });
             top.Children.Add(MakeLabel("Dodaj miejscowość:"));
             top.Children.Add(txtSearch);
@@ -105,6 +125,10 @@ namespace NaRyby_mac
             top.Children.Add(MakeLabel("Gatunek ryby:"));
             top.Children.Add(cmbSpecies);
             top.Children.Add(btnRefresh);
+            top.Children.Add(new Control { Width = 12 });
+            top.Children.Add(btnProtection);
+            top.Children.Add(btnShare);
+            top.Children.Add(btnAbout);
 
             // Baner z rekomendacją.
             lblRecommendation = new TextBlock
@@ -190,9 +214,15 @@ namespace NaRyby_mac
             root.Children.Add(middle);
             Content = root;
 
-            // ⌘R / Ctrl+R / F5 – odświeżenie prognozy.
+            // ⌘R / Ctrl+R / F5 – odświeżenie prognozy, F1 – okno „O mnie”.
             KeyDown += async (s, e) =>
             {
+                if (e.Key == Key.F1)
+                {
+                    e.Handled = true;
+                    await AboutWindow.ShowAbout(this);
+                    return;
+                }
                 bool refresh = e.Key == Key.F5 ||
                                (e.Key == Key.R && (e.KeyModifiers & (KeyModifiers.Meta | KeyModifiers.Control)) != 0);
                 if (!refresh) return;
@@ -271,7 +301,7 @@ namespace NaRyby_mac
                 Background = Ui.HeaderBackground,
                 Height = 30
             };
-            string[] titles = { "Dzień", "Ocena", "Wynik", "Najlepsza pora", "Na co łowić", "Temp.", "Wiatr max", "Opady", "Ciśnienie" };
+            string[] titles = { "Dzień", "Ocena", "Wynik", "Najlepsza pora", "Na co łowić", "Temp. powietrza", "Temp. wody", "Wiatr max", "Opady", "Ciśnienie" };
             for (int i = 0; i < titles.Length; i++)
             {
                 var cell = new TextBlock
@@ -463,6 +493,8 @@ namespace NaRyby_mac
             btnRefresh.IsEnabled = !busy;
             btnRemove.IsEnabled = !busy;
             btnAdd.IsEnabled = !busy;
+            btnCompare.IsEnabled = !busy;
+            btnShare.IsEnabled = !busy;
             txtSearch.IsEnabled = !busy;
             if (status != null) lblStatus.Text = status;
         }
@@ -504,6 +536,7 @@ namespace NaRyby_mac
                     d.BestWindowText,
                     string.Join(", ", d.SpeciesRanking.Take(3).Select(x => x.Species.Name)),
                     string.Format("{0:0}° / {1:0}°C", d.TempMin, d.TempMax),
+                    string.Format("ok. {0:0}°C", d.WaterTemperature),
                     string.Format("{0:0} km/h", d.WindMax),
                     string.Format("{0:0.#} mm", d.PrecipitationSum),
                     string.Format("{0:0} hPa {1}", d.Hours.Average(h => h.Pressure), arrow)
@@ -623,10 +656,53 @@ namespace NaRyby_mac
 
         private static string DayName(DateTime date, DateTime now)
         {
-            string name = date.ToString("dddd d.MM", Polish);
-            if (date == now.Date) return "Dziś, " + name;
-            if (date == now.Date.AddDays(1)) return "Jutro, " + name;
-            return char.ToUpper(name[0]) + name.Substring(1);
+            return Reports.DayName(date, now);
+        }
+
+        #endregion
+
+        #region Porównanie łowisk i udostępnianie
+
+        private async Task CompareSpotsAsync()
+        {
+            if (_busy) return;
+            var chosen = await CompareWindow.ShowCompare(this, _weather, _store.Cities.ToList(), SelectedSpecies);
+            if (chosen == null || chosen == cmbCity.SelectedItem) return;
+            RefreshCityList(chosen);
+            await LoadForecastAsync();
+        }
+
+        private async Task CopyForecastTextAsync()
+        {
+            if (_forecast == null || Clipboard == null) return;
+            await Clipboard.SetTextAsync(Reports.ForecastText(_forecast, SelectedSpecies));
+            lblStatus.Text = "Skopiowano prognozę do schowka – wklej ją w komunikatorze lub e-mailu.";
+        }
+
+        private async Task SaveWindowImageAsync()
+        {
+            var city = cmbCity.SelectedItem as City;
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Zapisz obraz prognozy",
+                SuggestedFileName = string.Format("NaRyby {0} {1:yyyy-MM-dd}.png", city != null ? city.Name : "", DateTime.Now),
+                DefaultExtension = "png",
+                FileTypeChoices = new[] { new FilePickerFileType("Obraz PNG") { Patterns = new[] { "*.png" } } }
+            });
+            if (file == null) return;
+
+            // Renderowanie w rozdzielczości ekranu (na Retinie 2×), żeby obraz był ostry.
+            double scale = RenderScaling;
+            var size = new PixelSize((int)(Bounds.Width * scale), (int)(Bounds.Height * scale));
+            using (var bitmap = new RenderTargetBitmap(size, new Vector(96 * scale, 96 * scale)))
+            {
+                bitmap.Render(this);
+                using (var stream = await file.OpenWriteAsync())
+                {
+                    bitmap.Save(stream);
+                }
+            }
+            lblStatus.Text = "Zapisano obraz: " + file.Name;
         }
 
         #endregion

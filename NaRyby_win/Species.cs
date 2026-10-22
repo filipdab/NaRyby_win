@@ -39,6 +39,9 @@ namespace NaRyby_win
         public int ClosedFrom { get; set; }
         public int ClosedTo { get; set; }
 
+        /// <summary>Ustawowy wymiar ochronny w cm; 0 = brak (regulaminy PZW mogą go wprowadzać).</summary>
+        public int MinLength { get; set; }
+
         public string ColdTip { get; set; }
         public string WarmTip { get; set; }
         public string[] Tips { get; set; }
@@ -89,6 +92,7 @@ namespace NaRyby_win
                 PressureSensitivity = 1.3, WindPreference = 1, CloudPreference = 1.2, RainPreference = 1,
                 SeasonBonus = new[] { 0, 0, 0, 0, 2, 0, -5, -3, 8, 10, 10, 3 },
                 ClosedFrom = 101, ClosedTo = 430,
+                MinLength = 50,
                 ColdTip = "Zimna woda: prowadź przynętę bardzo wolno, blisko dna; świetnie sprawdzają się duże gumy i martwa rybka.",
                 WarmTip = "Ciepła woda: szczupaki chowają się w chłodniejszej, głębszej wodzie – łów rano i wieczorem przy roślinności.",
                 Tips = new[]
@@ -107,6 +111,7 @@ namespace NaRyby_win
                 PressureSensitivity = 1.2, WindPreference = 1, CloudPreference = 1.5, RainPreference = 1,
                 SeasonBonus = new[] { 0, 0, 0, 0, 0, 3, 0, 3, 8, 10, 8, 3 },
                 ClosedFrom = 101, ClosedTo = 531,
+                MinLength = 50,
                 ColdTip = "Zimna woda: łów metodą jigową bardzo wolno, tuż przy dnie, na głębszych spadach i w dołkach.",
                 WarmTip = "Ciepła woda: sandacze żerują głównie nocą i o świcie, wychodząc na płycizny przy spadach.",
                 Tips = new[]
@@ -141,6 +146,7 @@ namespace NaRyby_win
                 TwilightBonus = 10, NightBonus = 5, MiddayBonus = -3,
                 PressureSensitivity = 1.4, WindPreference = 0.5, CloudPreference = 0.5, RainPreference = 0.5,
                 SeasonBonus = new[] { -15, -15, -10, -3, 6, 10, 8, 8, 8, 2, -8, -15 },
+                MinLength = 30,
                 ColdTip = "Zimna woda: karp jest ospały – małe, bardzo atrakcyjne przynęty, niewiele zanęty, głębsza woda.",
                 WarmTip = "Upał: łów nocą i wcześnie rano; w dzień karpie stoją przy powierzchni – spróbuj zig-riga.",
                 Tips = new[]
@@ -174,6 +180,7 @@ namespace NaRyby_win
                 TwilightBonus = 15, NightBonus = -2, MiddayBonus = -6,
                 PressureSensitivity = 1.2, WindPreference = -1, CloudPreference = 0.5, RainPreference = 1,
                 SeasonBonus = new[] { -15, -15, -12, -5, 6, 10, 8, 5, 2, -5, -12, -15 },
+                MinLength = 25,
                 ColdTip = "W zimnej wodzie lin praktycznie nie żeruje – lepiej wybierz inny gatunek.",
                 WarmTip = "Ciepła woda: łów o świcie w zarośniętych zatokach – po wschodzie słońca brania szybko słabną.",
                 Tips = new[]
@@ -206,6 +213,7 @@ namespace NaRyby_win
                 TwilightBonus = 12, NightBonus = 15, MiddayBonus = -10,
                 PressureSensitivity = 1.3, WindPreference = 0, CloudPreference = 1, RainPreference = 1.5,
                 SeasonBonus = new[] { -20, -20, -15, -8, 2, 8, 10, 10, 5, -3, -12, -20 },
+                MinLength = 70,
                 ColdTip = "W zimnej wodzie sum zalega w dołach i praktycznie nie żeruje.",
                 WarmTip = "Ciepłe, parne noce przy spadającym ciśnieniu to najlepszy czas – spróbuj kwoka.",
                 Tips = new[]
@@ -224,6 +232,7 @@ namespace NaRyby_win
                 PressureSensitivity = 1, WindPreference = 0.5, CloudPreference = -0.5, RainPreference = 0,
                 SeasonBonus = new[] { -10, -10, -5, 0, 6, 8, 8, 8, 6, 2, -5, -10 },
                 ClosedFrom = 101, ClosedTo = 430,
+                MinLength = 40,
                 ColdTip = "Zimna woda: bolenie schodzą głębiej i rzadko polują przy powierzchni – prowadź przynętę wolniej i niżej.",
                 WarmTip = "Ciepła woda: bolenie atakują drobnicę przy powierzchni – szukaj „chlapania” i rzucaj daleko.",
                 Tips = new[]

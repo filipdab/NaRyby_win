@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using NaRyby_win;
 
 namespace NaRyby_mac
@@ -67,6 +71,95 @@ namespace NaRyby_mac
         private static Button MakeButton(string text)
         {
             return new Button { Content = text, MinWidth = 80, HorizontalContentAlignment = HorizontalAlignment.Center };
+        }
+    }
+
+    /// <summary>
+    /// Okno „O mnie” – informacje o programie, autorze i źródle danych.
+    /// </summary>
+    public class AboutWindow : Window
+    {
+        private const string WeatherUrl = "https://open-meteo.com";
+
+        private AboutWindow()
+        {
+            Title = "O mnie";
+            Width = 460;
+            SizeToContent = SizeToContent.Height;
+            CanResize = false;
+            ShowInTaskbar = false;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            Background = Brushes.White;
+            FontSize = 13;
+
+            var header = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16 };
+            try
+            {
+                header.Children.Add(new Image
+                {
+                    Width = 64,
+                    Height = 64,
+                    Source = new Bitmap(AssetLoader.Open(new Uri("avares://NaRyby/Assets/icon.png")))
+                });
+            }
+            catch (Exception)
+            {
+                // Brak ikony nie przeszkadza w działaniu programu.
+            }
+            var titles = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            titles.Children.Add(new TextBlock { Text = "NaRyby", FontSize = 26, FontWeight = FontWeight.Bold, Foreground = Ui.SteelBlue });
+            titles.Children.Add(new TextBlock { Text = "kiedy jechać na ryby?", FontSize = 14, Foreground = Ui.DimGray });
+            header.Children.Add(titles);
+
+            var ok = new Button { Content = "OK", IsDefault = true, IsCancel = true, MinWidth = 80, HorizontalContentAlignment = HorizontalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Right };
+            ok.Click += (s, e) => Close();
+
+            var panel = new StackPanel { Margin = new Thickness(22), Spacing = 8 };
+            panel.Children.Add(header);
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Prognoza brań na 7 dni dla wędkarzy – na podstawie pogody, ciśnienia, " +
+                       "wiatru, fazy księżyca i wybranego gatunku ryby.",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 10, 0, 4)
+            });
+            panel.Children.Add(new TextBlock { Text = "Autor: Filip Dąbrowski", FontWeight = FontWeight.Bold });
+            panel.Children.Add(MakeLink("Kod źródłowy: ", "github.com/filipdab/NaRyby_win", Reports.RepoUrl));
+            panel.Children.Add(MakeLink("Dane pogodowe: ", "Open-Meteo.com", WeatherUrl));
+            panel.Children.Add(new TextBlock { Text = "Licencja MIT · © 2026 Filip Dąbrowski", Foreground = Ui.DimGray });
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Prognoza ma charakter orientacyjny – ryby nie zawsze czytają prognozy. Połamania kija!",
+                TextWrapping = TextWrapping.Wrap,
+                FontStyle = FontStyle.Italic,
+                FontSize = 12,
+                Foreground = Ui.DimGray,
+                Margin = new Thickness(0, 6, 0, 6)
+            });
+            panel.Children.Add(ok);
+            Content = panel;
+        }
+
+        private Control MakeLink(string prefix, string linkText, string url)
+        {
+            var link = new TextBlock
+            {
+                Text = linkText,
+                Foreground = Ui.SteelBlue,
+                TextDecorations = TextDecorations.Underline,
+                Cursor = new Cursor(StandardCursorType.Hand)
+            };
+            link.PointerPressed += async (s, e) => await Launcher.LaunchUriAsync(new Uri(url));
+
+            var row = new StackPanel { Orientation = Orientation.Horizontal };
+            row.Children.Add(new TextBlock { Text = prefix });
+            row.Children.Add(link);
+            return row;
+        }
+
+        public static Task ShowAbout(Window owner)
+        {
+            return new AboutWindow().ShowDialog(owner);
         }
     }
 

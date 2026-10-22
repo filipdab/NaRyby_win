@@ -16,16 +16,12 @@ namespace NaRyby_mac
             Styles.Add(new FluentTheme());
 
             // Menu aplikacji na macOS (zamiast domyślnego „About Avalonia”).
-            var about = new NativeMenuItem("O programie NaRyby");
+            var about = new NativeMenuItem("O mnie");
             about.Click += async (s, e) =>
             {
                 var desktop = ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
                 if (desktop != null && desktop.MainWindow != null)
-                    await Dialogs.Info(desktop.MainWindow,
-                        "NaRyby – kiedy jechać na ryby?\n\n" +
-                        "Prognoza pogody: Open-Meteo.com (CC BY 4.0)\n" +
-                        "github.com/filipdab/NaRyby_win\n\n" +
-                        "Licencja MIT · Filip Dąbrowski");
+                    await AboutWindow.ShowAbout(desktop.MainWindow);
             };
             var menu = new NativeMenu();
             menu.Items.Add(about);
