@@ -47,6 +47,13 @@ xattr -dr com.apple.quarantine /Applications/NaRyby.app
   oraz informacja o okresie ochronnym.
 - **Dowolne miejscowości** – wyszukiwarka dodaje jezioro, wieś lub miasto, a lista jest
   zapamiętywana. Domyślna lokalizacja: Arciechów koło Radzymina.
+- **Porównanie łowisk** – oceny na 7 dni dla wszystkich zapisanych miejscowości w jednej tabeli;
+  dwuklik otwiera prognozę wybranego łowiska.
+- **Okresy i wymiary ochronne** – zestawienie dla wszystkich gatunków z zaznaczeniem,
+  co jest dziś pod ochroną, a czemu ochrona zaczyna się wkrótce.
+- **Udostępnianie** – prognoza jako tekst do schowka (do wklejenia w komunikatorze)
+  albo obraz okna w PNG.
+- **Temperatura powietrza i wody** – osobne kolumny w tabeli dni.
 - **Automatyczne odświeżanie** co 30 minut.
 
 | Ocena dnia dla wybranego gatunku | Porady dla wybranego gatunku |
