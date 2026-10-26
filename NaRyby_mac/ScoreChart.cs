@@ -17,14 +17,14 @@ namespace NaRyby_mac
     {
         private const double TextSize = 11;
 
-        private static readonly IBrush NightBrush = new SolidColorBrush(Color.FromRgb(232, 236, 246));
-        private static readonly IBrush BestBrush = new SolidColorBrush(Color.FromRgb(215, 240, 215));
-        private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.FromRgb(225, 225, 225)), 1);
-        private static readonly IBrush PressureBrush = new SolidColorBrush(Color.FromRgb(40, 90, 200));
+        private static readonly IBrush NightBrush = Ui.Themed(Color.FromRgb(232, 236, 246), Color.FromRgb(46, 52, 68));
+        private static readonly IBrush BestBrush = Ui.Themed(Color.FromRgb(215, 240, 215), Color.FromRgb(40, 72, 46));
+        private static readonly IPen GridPen = new Pen(Ui.Themed(Color.FromRgb(225, 225, 225), Color.FromRgb(62, 66, 72)), 1);
+        private static readonly IBrush PressureBrush = Ui.Themed(Color.FromRgb(40, 90, 200), Color.FromRgb(110, 160, 255));
         private static readonly IPen PressurePen = new Pen(PressureBrush, 2);
-        private static readonly IPen LegendPen = new Pen(new SolidColorBrush(Color.FromRgb(192, 192, 192)), 1);
-        private static readonly IBrush TipBackground = new SolidColorBrush(Color.FromRgb(255, 255, 240));
-        private static readonly IPen TipPen = new Pen(new SolidColorBrush(Color.FromRgb(160, 160, 160)), 1);
+        private static readonly IPen LegendPen = new Pen(Ui.Themed(Color.FromRgb(192, 192, 192), Color.FromRgb(100, 104, 110)), 1);
+        private static readonly IBrush TipBackground = Ui.Themed(Color.FromRgb(255, 255, 240), Color.FromRgb(52, 55, 61));
+        private static readonly IPen TipPen = new Pen(Ui.Themed(Color.FromRgb(160, 160, 160), Color.FromRgb(110, 114, 120)), 1);
 
         private DayData _day;
         private int _hoverIndex = -1;
@@ -33,6 +33,8 @@ namespace NaRyby_mac
         public ScoreChart()
         {
             ClipToBounds = true;
+            // Wykres rysuje sam, więc po zmianie motywu musi się przerysować.
+            Ui.ThemeChanged += (s, e) => InvalidateVisual();
         }
 
         public DayData Day
@@ -60,11 +62,11 @@ namespace NaRyby_mac
         public override void Render(DrawingContext ctx)
         {
             var bounds = new Rect(Bounds.Size);
-            ctx.FillRectangle(Brushes.White, bounds);
+            ctx.FillRectangle(Ui.Surface, bounds);
 
             if (_day == null || _day.Hours.Count == 0)
             {
-                var empty = Text("Brak danych – wybierz miejscowość.", Brushes.Gray);
+                var empty = Text("Brak danych – wybierz miejscowość.", Ui.DimGray);
                 ctx.DrawText(empty, new Point((bounds.Width - empty.Width) / 2, (bounds.Height - empty.Height) / 2));
                 return;
             }
@@ -164,7 +166,7 @@ namespace NaRyby_mac
                 FishingAdvisor.WeatherDescription(h.WeatherCode), h.Temperature, h.Pressure,
                 h.WindSpeed, FishingAdvisor.WindDirectionName(h.WindDirection), h.WindGusts,
                 h.Precipitation, h.CloudCover);
-            var tip = Text(text, Brushes.Black);
+            var tip = Text(text, Ui.Text);
 
             double w = tip.Width + 16, hgt = tip.Height + 12;
             double x = _mouse.X + 14, y = _mouse.Y + 14;

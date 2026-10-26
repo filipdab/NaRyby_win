@@ -39,6 +39,7 @@ namespace NaRyby_win
             Controls.Add(buttons);
             AcceptButton = ok;
             CancelButton = cancel;
+            Theme.Apply(this);
         }
 
         public static City Pick(IWin32Window owner, List<City> cities)

@@ -68,6 +68,7 @@
     <Compile Include="ScoreChart.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Theme.cs" />
     <Compile Include="WeatherService.cs" />
   </ItemGroup>
   <ItemGroup>

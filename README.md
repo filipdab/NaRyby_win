@@ -55,6 +55,8 @@ xattr -dr com.apple.quarantine /Applications/NaRyby.app
   albo obraz okna w PNG.
 - **Temperatura powietrza i wody** – osobne kolumny w tabeli dni.
 - **Automatyczne odświeżanie** co 30 minut.
+- **Ciemny motyw** – przycisk „Motyw” pozwala wybrać jasny lub ciemny wygląd albo „Jak w systemie”
+  (wtedy aplikacja przełącza się razem z ustawieniem Windows / macOS). Wybór jest zapamiętywany.
 
 | Ocena dnia dla wybranego gatunku | Porady dla wybranego gatunku |
 |---|---|

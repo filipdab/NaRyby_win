@@ -10,8 +10,7 @@ namespace NaRyby_win
     /// </summary>
     public class ProtectionForm : Form
     {
-        private static readonly Color ClosedColor = Color.FromArgb(253, 226, 226);
-        private static readonly Color SoonColor = Color.FromArgb(255, 243, 205);
+        private readonly DataGridView grid;
 
         private ProtectionForm()
         {
@@ -25,7 +24,7 @@ namespace NaRyby_win
             ShowInTaskbar = false;
             Padding = new Padding(10);
 
-            var grid = new DataGridView
+            grid = new DataGridView
             {
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
@@ -35,7 +34,6 @@ namespace NaRyby_win
                 RowHeadersVisible = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
@@ -43,9 +41,6 @@ namespace NaRyby_win
             };
             grid.RowTemplate.Height = 28;
             grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(230, 235, 242);
-            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(230, 235, 242);
-            grid.DefaultCellStyle.SelectionForeColor = Color.Black;
 
             grid.Columns.Add("name", "Gatunek");
             grid.Columns.Add("period", "Okres ochronny");
@@ -62,22 +57,19 @@ namespace NaRyby_win
             {
                 string status = Reports.ProtectionStatus(sp, today);
                 int row = grid.Rows.Add(sp.Name, sp.ClosedText ?? "brak", Reports.MinLengthText(sp), status);
-                Color back = sp.IsClosed(today) ? ClosedColor : status.Contains("ochrona") ? SoonColor : Color.White;
-                grid.Rows[row].DefaultCellStyle.BackColor = back;
-                grid.Rows[row].DefaultCellStyle.SelectionBackColor = ControlPaint.Dark(back, 0.05f);
+                grid.Rows[row].Tag = sp;
                 if (sp.IsClosed(today)) grid.Rows[row].Cells["status"].Style.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             }
             // DataGridView zaznacza pierwszy wiersz przy tworzeniu – to tylko zestawienie, więc bez zaznaczenia.
             Shown += (s, e) => grid.ClearSelection();
 
-            var note = new Label
+            var note = Theme.Dim(new Label
             {
                 Dock = DockStyle.Bottom,
                 Height = 58,
                 Padding = new Padding(0, 8, 0, 0),
-                ForeColor = Color.DimGray,
                 Text = Reports.ProtectionNote
-            };
+            });
             var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Size = new Size(80, 27) };
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, FlowDirection = FlowDirection.RightToLeft, AutoSize = true };
             buttons.Controls.Add(ok);
@@ -87,6 +79,24 @@ namespace NaRyby_win
             Controls.Add(buttons);
             AcceptButton = ok;
             CancelButton = ok;
+
+            ApplyTheme(null, EventArgs.Empty);
+            Theme.Changed += ApplyTheme;
+            FormClosed += (s, e) => Theme.Changed -= ApplyTheme;
+        }
+
+        private void ApplyTheme(object sender, EventArgs e)
+        {
+            Theme.Apply(this);
+            var today = DateTime.Today;
+            foreach (DataGridViewRow row in grid.Rows)
+            {
+                var sp = (Species)row.Tag;
+                Color back = sp.IsClosed(today) ? Theme.ClosedRow
+                    : Reports.ProtectionStatus(sp, today).Contains("ochrona") ? Theme.SoonRow : Theme.Surface;
+                row.DefaultCellStyle.BackColor = back;
+                row.DefaultCellStyle.SelectionBackColor = Theme.IsDark ? ControlPaint.Light(back, 0.1f) : ControlPaint.Dark(back, 0.05f);
+            }
         }
 
         public static void ShowProtection(IWin32Window owner)

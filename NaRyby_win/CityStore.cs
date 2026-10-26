@@ -16,6 +16,7 @@ namespace NaRyby_win
     {
         private const string LastPrefix = "#last=";
         private const string SpeciesPrefix = "#species=";
+        private const string ThemePrefix = "#theme=";
 
         private readonly string _path = Path.Combine(DataFolder(), "NaRyby", "miasta.txt");
 
@@ -36,6 +37,9 @@ namespace NaRyby_win
         public string LastCity { get; set; }
         public string LastSpecies { get; set; }
 
+        /// <summary>Wybrany motyw: "light", "dark" albo null – zgodnie z systemem.</summary>
+        public string ThemeMode { get; set; }
+
         public void Load()
         {
             Cities.Clear();
@@ -53,6 +57,11 @@ namespace NaRyby_win
                         if (line.StartsWith(SpeciesPrefix))
                         {
                             LastSpecies = line.Substring(SpeciesPrefix.Length);
+                            continue;
+                        }
+                        if (line.StartsWith(ThemePrefix))
+                        {
+                            ThemeMode = line.Substring(ThemePrefix.Length);
                             continue;
                         }
 
@@ -81,6 +90,7 @@ namespace NaRyby_win
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(_path));
                 var lines = Cities.Select(c => string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}", c.Name, c.Latitude, c.Longitude)).ToList();
+                if (!string.IsNullOrEmpty(ThemeMode)) lines.Insert(0, ThemePrefix + ThemeMode);
                 if (!string.IsNullOrEmpty(LastSpecies)) lines.Insert(0, SpeciesPrefix + LastSpecies);
                 if (!string.IsNullOrEmpty(LastCity)) lines.Insert(0, LastPrefix + LastCity);
                 File.WriteAllLines(_path, lines, Encoding.UTF8);

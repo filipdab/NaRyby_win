@@ -21,7 +21,7 @@ namespace NaRyby_win
             MinimizeBox = false;
             MaximizeBox = false;
             ShowInTaskbar = false;
-            BackColor = Color.White;
+            Theme.UseSurface(this);
 
             var icon = new PictureBox
             {
@@ -30,22 +30,20 @@ namespace NaRyby_win
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Image = new Icon(Icon.ExtractAssociatedIcon(Application.ExecutablePath), 64, 64).ToBitmap()
             };
-            var title = new Label
+            var title = Theme.Accented(new Label
             {
                 Text = "NaRyby",
                 Location = new Point(100, 20),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 18f, FontStyle.Bold),
-                ForeColor = Color.SteelBlue
-            };
-            var subtitle = new Label
+                Font = new Font("Segoe UI", 18f, FontStyle.Bold)
+            });
+            var subtitle = Theme.Dim(new Label
             {
                 Text = "kiedy jechać na ryby?",
                 Location = new Point(102, 58),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 10f),
-                ForeColor = Color.DimGray
-            };
+                Font = new Font("Segoe UI", 10f)
+            });
             var description = new Label
             {
                 Text = "Prognoza brań na 7 dni dla wędkarzy – na podstawie pogody, ciśnienia, " +
@@ -62,27 +60,26 @@ namespace NaRyby_win
             };
             var repo = MakeLink("Kod źródłowy: ", "github.com/filipdab/NaRyby_win", Reports.RepoUrl, new Point(20, 176));
             var weather = MakeLink("Dane pogodowe: ", "Open-Meteo.com", WeatherUrl, new Point(20, 200));
-            var license = new Label
+            var license = Theme.Dim(new Label
             {
                 Text = "Licencja MIT · © 2026 Filip Dąbrowski",
                 Location = new Point(20, 224),
-                AutoSize = true,
-                ForeColor = Color.DimGray
-            };
-            var note = new Label
+                AutoSize = true
+            });
+            var note = Theme.Dim(new Label
             {
                 Text = "Prognoza ma charakter orientacyjny – ryby nie zawsze czytają prognozy. Połamania kija!",
                 Location = new Point(20, 252),
                 Size = new Size(400, 34),
-                ForeColor = Color.DimGray,
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Italic)
-            };
+            });
 
             var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Size = new Size(80, 27), Location = new Point(340, 292) };
 
             Controls.AddRange(new Control[] { icon, title, subtitle, description, author, repo, weather, license, note, ok });
             AcceptButton = ok;
             CancelButton = ok;
+            Theme.Apply(this);
         }
 
         private static LinkLabel MakeLink(string prefix, string linkText, string url, Point location)
