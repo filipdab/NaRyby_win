@@ -89,7 +89,7 @@ namespace NaRyby_mac
             CanResize = false;
             ShowInTaskbar = false;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            Background = Brushes.White;
+            Background = Ui.Surface;
             FontSize = 13;
 
             var header = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16 };

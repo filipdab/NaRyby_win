@@ -11,8 +11,8 @@ namespace NaRyby_mac
         public override void Initialize()
         {
             Name = "NaRyby";
-            // Kolory tabeli i wykresu są dobrane do jasnego tła, więc motyw jest zawsze jasny.
-            RequestedThemeVariant = ThemeVariant.Light;
+            // Motyw jasny albo ciemny – zgodnie z ustawieniem systemu, dopóki użytkownik nie wybierze innego.
+            RequestedThemeVariant = ThemeVariant.Default;
             Styles.Add(new FluentTheme());
 
             // Menu aplikacji na macOS (zamiast domyślnego „About Avalonia”).
@@ -28,8 +28,19 @@ namespace NaRyby_mac
             NativeMenu.SetMenu(this, menu);
         }
 
+        /// <summary>Ustawia motyw: "light", "dark" albo null – zgodnie z systemem.</summary>
+        public static void SetThemeMode(string mode)
+        {
+            Current.RequestedThemeVariant = mode == "dark" ? ThemeVariant.Dark
+                : mode == "light" ? ThemeVariant.Light
+                : ThemeVariant.Default;
+        }
+
         public override void OnFrameworkInitializationCompleted()
         {
+            Ui.ApplyTheme(ActualThemeVariant == ThemeVariant.Dark);
+            ActualThemeVariantChanged += (s, e) => Ui.ApplyTheme(ActualThemeVariant == ThemeVariant.Dark);
+
             var desktop = ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
             if (desktop != null) desktop.MainWindow = new MainWindow();
             base.OnFrameworkInitializationCompleted();

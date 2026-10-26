@@ -42,6 +42,8 @@ namespace NaRyby_win
         private TextBox txtTips;
         private ToolStripStatusLabel lblStatus;
         private Timer refreshTimer;
+        private ContextMenuStrip shareMenu;
+        private ContextMenuStrip themeMenu;
 
         public MainForm()
         {
@@ -59,7 +61,6 @@ namespace NaRyby_win
             Size = new Size(1250, 820);
             MinimumSize = new Size(900, 650);
             StartPosition = FormStartPosition.CenterScreen;
-            BackColor = Color.FromArgb(245, 247, 250);
 
             // Pasek wyboru miejscowości.
             var top = new FlowLayoutPanel
@@ -94,11 +95,17 @@ namespace NaRyby_win
             var btnProtection = new Button { Text = "Okresy ochronne", AutoSize = true };
             btnProtection.Click += (s, e) => ProtectionForm.ShowProtection(this);
             btnShare = new Button { Text = "Udostępnij ▾", AutoSize = true };
-            var shareMenu = new ContextMenuStrip();
+            shareMenu = new ContextMenuStrip();
             shareMenu.Items.Add("Kopiuj prognozę jako tekst", null, (s, e) => CopyForecastText());
             shareMenu.Items.Add("Kopiuj obraz okna", null, (s, e) => CopyWindowImage());
             shareMenu.Items.Add("Zapisz obraz okna (PNG)...", null, (s, e) => SaveWindowImage());
             btnShare.Click += (s, e) => shareMenu.Show(btnShare, new Point(0, btnShare.Height));
+            var btnTheme = new Button { Text = "Motyw ▾", AutoSize = true };
+            themeMenu = new ContextMenuStrip();
+            AddThemeItem("Jak w systemie", null);
+            AddThemeItem("Jasny", "light");
+            AddThemeItem("Ciemny", "dark");
+            btnTheme.Click += (s, e) => themeMenu.Show(btnTheme, new Point(0, btnTheme.Height));
             var btnAbout = new Button { Text = "ⓘ O mnie", AutoSize = true };
             btnAbout.Click += (s, e) => AboutForm.ShowAbout(this);
 
@@ -117,6 +124,7 @@ namespace NaRyby_win
             top.Controls.Add(new Label { Width = 12 });
             top.Controls.Add(btnProtection);
             top.Controls.Add(btnShare);
+            top.Controls.Add(btnTheme);
             top.Controls.Add(btnAbout);
 
             // F1 – okno „O mnie”.
@@ -158,7 +166,7 @@ namespace NaRyby_win
             // Dół: wykres godzinowy + uzasadnienie.
             grpChart = new GroupBox { Text = "Prognoza godzinowa", Dock = DockStyle.Fill, Padding = new Padding(8) };
             chart = new ScoreChart { Dock = DockStyle.Fill };
-            var tabs = new TabControl { Dock = DockStyle.Right, Width = 440 };
+            var tabs = new ThemedTabControl { Dock = DockStyle.Right, Width = 440 };
             txtDayDetails = MakeReadOnlyText();
             txtTips = MakeReadOnlyText();
             var tabDay = new TabPage("Ocena dnia");
@@ -188,6 +196,49 @@ namespace NaRyby_win
             refreshTimer = new Timer { Interval = 30 * 60 * 1000 };
             refreshTimer.Tick += async (s, e) => await LoadForecastAsync();
             refreshTimer.Start();
+
+            ApplyTheme();
+            Theme.Changed += OnThemeChanged;
+            FormClosed += (s, e) => Theme.Changed -= OnThemeChanged;
+        }
+
+        private void ApplyTheme()
+        {
+            Theme.Apply(this);
+            Theme.Apply(shareMenu);
+            Theme.Apply(themeMenu);
+            grid.Columns["stars"].DefaultCellStyle.ForeColor = Theme.Gold;
+        }
+
+        private void OnThemeChanged(object sender, EventArgs e)
+        {
+            ApplyTheme();
+            // Tło najlepszego dnia jest liczone z koloru tła, więc po zmianie motywu tabelę trzeba zbudować od nowa.
+            if (_forecast == null) return;
+            int selected = grid.SelectedRows.Count > 0 ? grid.SelectedRows[0].Index : -1;
+            ShowForecast();
+            if (selected < 0) return;
+            grid.ClearSelection();
+            grid.Rows[selected].Selected = true;
+            grid.CurrentCell = grid.Rows[selected].Cells[0];
+        }
+
+        private void AddThemeItem(string text, string mode)
+        {
+            var item = new ToolStripMenuItem(text) { Tag = mode };
+            item.Click += (s, e) =>
+            {
+                _store.ThemeMode = mode;
+                _store.Save();
+                Theme.Mode = mode;
+                UpdateThemeMenu();
+            };
+            themeMenu.Items.Add(item);
+        }
+
+        private void UpdateThemeMenu()
+        {
+            foreach (ToolStripMenuItem item in themeMenu.Items) item.Checked = (string)item.Tag == Theme.Mode;
         }
 
         private static TextBox MakeReadOnlyText()
@@ -199,7 +250,6 @@ namespace NaRyby_win
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
                 BorderStyle = BorderStyle.None,
-                BackColor = Color.White,
                 Font = new Font("Segoe UI", 9.5f)
             };
         }
@@ -222,7 +272,6 @@ namespace NaRyby_win
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
@@ -230,11 +279,6 @@ namespace NaRyby_win
             };
             g.RowTemplate.Height = 30;
             g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            g.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(230, 235, 242);
-            g.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(230, 235, 242);
-            g.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black;
-            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(200, 220, 245);
-            g.DefaultCellStyle.SelectionForeColor = Color.Black;
 
             g.Columns.Add("day", "Dzień");
             g.Columns.Add("stars", "Ocena");
@@ -250,7 +294,6 @@ namespace NaRyby_win
             g.Columns["day"].FillWeight = 150;
             g.Columns["stars"].FillWeight = 90;
             g.Columns["stars"].DefaultCellStyle.Font = new Font("Segoe UI Symbol", 11f);
-            g.Columns["stars"].DefaultCellStyle.ForeColor = Color.DarkGoldenrod;
             g.Columns["score"].FillWeight = 55;
             g.Columns["score"].DefaultCellStyle.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             g.Columns["score"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -269,6 +312,8 @@ namespace NaRyby_win
         private void LoadCities()
         {
             _store.Load();
+            Theme.Mode = _store.ThemeMode;
+            UpdateThemeMenu();
             var lastSpecies = Species.All.FirstOrDefault(sp => sp.Name == _store.LastSpecies);
             if (lastSpecies != null) cmbSpecies.SelectedItem = lastSpecies;
             RefreshCityList(_store.Cities.FirstOrDefault(c => c.Name == _store.LastCity) ?? _store.Cities.FirstOrDefault());
@@ -436,7 +481,7 @@ namespace NaRyby_win
                 r.Cells["score"].Style.SelectionForeColor = Color.White;
                 if (d == best)
                 {
-                    r.DefaultCellStyle.BackColor = FishingAdvisor.LightScoreColor(d.Score);
+                    r.DefaultCellStyle.BackColor = Theme.SoftScoreColor(d.Score);
                     r.Cells["day"].Value = "★ " + r.Cells["day"].Value;
                 }
             }

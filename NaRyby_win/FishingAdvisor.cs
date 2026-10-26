@@ -313,12 +313,6 @@ namespace NaRyby_win
             return Color.FromArgb(215, 70, 60);
         }
 
-        public static Color LightScoreColor(int score)
-        {
-            Color c = ScoreColor(score);
-            return Color.FromArgb(255 - (255 - c.R) / 3, 255 - (255 - c.G) / 3, 255 - (255 - c.B) / 3);
-        }
-
         public static string WeatherDescription(int code)
         {
             if (code == 0) return "Bezchmurnie";

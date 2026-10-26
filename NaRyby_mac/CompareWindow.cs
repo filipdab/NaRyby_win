@@ -59,7 +59,7 @@ namespace NaRyby_mac
             root.Children.Add(_status);
             root.Children.Add(new Border
             {
-                Background = Brushes.White,
+                Background = Ui.Surface,
                 BorderBrush = Ui.BorderBrush,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
@@ -110,7 +110,7 @@ namespace NaRyby_mac
                 header.Children.Add(cell);
             }
 
-            var list = new ListBox { Background = Brushes.White, BorderThickness = new Thickness(0), SelectionMode = SelectionMode.Single };
+            var list = new ListBox { Background = Ui.Surface, BorderThickness = new Thickness(0), SelectionMode = SelectionMode.Single };
             foreach (var r in results) list.Items.Add(SpotRow(r, dates, now, columns));
             list.DoubleTapped += (s, e) => Choose(list);
             list.KeyDown += (s, e) =>
@@ -210,8 +210,8 @@ namespace NaRyby_mac
     public class ProtectionWindow : Window
     {
         private const string Columns = "100*,110*,120*,200*";
-        private static readonly IBrush ClosedBrush = new SolidColorBrush(Color.FromRgb(253, 226, 226));
-        private static readonly IBrush SoonBrush = new SolidColorBrush(Color.FromRgb(255, 243, 205));
+        private static readonly IBrush ClosedBrush = Ui.Themed(Color.FromRgb(253, 226, 226), Color.FromRgb(92, 40, 40));
+        private static readonly IBrush SoonBrush = Ui.Themed(Color.FromRgb(255, 243, 205), Color.FromRgb(84, 70, 30));
 
         private ProtectionWindow()
         {
@@ -231,7 +231,7 @@ namespace NaRyby_mac
             {
                 string status = Reports.ProtectionStatus(sp, today);
                 bool closed = sp.IsClosed(today);
-                IBrush back = closed ? ClosedBrush : status.Contains("ochrona") ? SoonBrush : Brushes.White;
+                IBrush back = closed ? ClosedBrush : status.Contains("ochrona") ? SoonBrush : Ui.Surface;
                 table.Children.Add(Row(new[] { sp.Name, sp.ClosedText ?? "brak", Reports.MinLengthText(sp), status }, back, false, closed));
             }
 

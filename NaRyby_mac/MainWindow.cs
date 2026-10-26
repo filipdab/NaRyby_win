@@ -31,6 +31,7 @@ namespace NaRyby_mac
         private Forecast _forecast;
         private bool _suppressCityChange;
         private bool _busy;
+        private MenuFlyout themeMenu;
 
         private ComboBox cmbCity;
         private ComboBox cmbSpecies;
@@ -110,6 +111,12 @@ namespace NaRyby_mac
             shareMenu.Items.Add(copyText);
             shareMenu.Items.Add(saveImage);
             btnShare.Flyout = shareMenu;
+            var btnTheme = MakeButton("Motyw ▾");
+            themeMenu = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
+            AddThemeItem("Jak w systemie", null);
+            AddThemeItem("Jasny", "light");
+            AddThemeItem("Ciemny", "dark");
+            btnTheme.Flyout = themeMenu;
             var btnAbout = MakeButton("ⓘ O mnie");
             btnAbout.Click += async (s, e) => await AboutWindow.ShowAbout(this);
 
@@ -128,6 +135,7 @@ namespace NaRyby_mac
             top.Children.Add(new Control { Width = 12 });
             top.Children.Add(btnProtection);
             top.Children.Add(btnShare);
+            top.Children.Add(btnTheme);
             top.Children.Add(btnAbout);
 
             // Baner z rekomendacją.
@@ -144,7 +152,7 @@ namespace NaRyby_mac
             {
                 Height = 68,
                 Padding = new Thickness(16, 6),
-                Background = Ui.SteelBlue,
+                Background = Ui.Banner,
                 Child = lblRecommendation
             };
 
@@ -156,7 +164,7 @@ namespace NaRyby_mac
             var header = DayHeader();
             DockPanel.SetDock(header, Dock.Top);
             daysPanel.Children.Add(header);
-            grid = new ListBox { Background = Brushes.White, BorderThickness = new Thickness(0), SelectionMode = SelectionMode.Single };
+            grid = new ListBox { Background = Ui.Surface, BorderThickness = new Thickness(0), SelectionMode = SelectionMode.Single };
             grid.SelectionChanged += (s, e) => ShowSelectedDay();
             daysPanel.Children.Add(grid);
             var grpDays = Group("Prognoza brań na 7 dni (kliknij dzień, aby zobaczyć szczegóły)", daysPanel);
@@ -180,7 +188,7 @@ namespace NaRyby_mac
             tabs.Items.Add(tabTips);
             var tabsBorder = new Border
             {
-                Background = Brushes.White,
+                Background = Ui.Surface,
                 BorderBrush = Ui.BorderBrush,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
@@ -233,6 +241,15 @@ namespace NaRyby_mac
             refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(30) };
             refreshTimer.Tick += async (s, e) => await LoadForecastAsync();
             refreshTimer.Start();
+
+            // Tło najlepszego dnia jest liczone z koloru oceny, więc po zmianie motywu tabelę trzeba zbudować od nowa.
+            Ui.ThemeChanged += (s, e) =>
+            {
+                if (_forecast == null) return;
+                int selected = grid.SelectedIndex;
+                ShowForecast();
+                grid.SelectedIndex = selected;
+            };
         }
 
         private static Border Group(string title, Control content)
@@ -251,7 +268,7 @@ namespace NaRyby_mac
             panel.Children.Add(content);
             return new Border
             {
-                Background = Brushes.White,
+                Background = Ui.Surface,
                 BorderBrush = Ui.BorderBrush,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
@@ -281,6 +298,24 @@ namespace NaRyby_mac
                 LineHeight = 19,
                 Margin = new Thickness(12, 8, 12, 12)
             };
+        }
+
+        private void AddThemeItem(string text, string mode)
+        {
+            var item = new MenuItem { Header = text, Tag = mode, ToggleType = MenuItemToggleType.Radio, GroupName = "theme" };
+            item.Click += (s, e) =>
+            {
+                _store.ThemeMode = mode;
+                _store.Save();
+                App.SetThemeMode(mode);
+                UpdateThemeMenu();
+            };
+            themeMenu.Items.Add(item);
+        }
+
+        private void UpdateThemeMenu()
+        {
+            foreach (MenuItem item in themeMenu.Items) item.IsChecked = (string)item.Tag == _store.ThemeMode;
         }
 
         private static Button MakeButton(string text)
@@ -366,7 +401,7 @@ namespace NaRyby_mac
             }
 
             var item = new ListBoxItem { Content = row, Tag = d, Padding = new Thickness(4, 0), MinHeight = 0 };
-            if (isBest) item.Background = Ui.Brush(FishingAdvisor.LightScoreColor(d.Score));
+            if (isBest) item.Background = Ui.SoftBrush(FishingAdvisor.ScoreColor(d.Score));
             return item;
         }
 
@@ -377,6 +412,8 @@ namespace NaRyby_mac
         private void LoadCities()
         {
             _store.Load();
+            App.SetThemeMode(_store.ThemeMode);
+            UpdateThemeMenu();
             var lastSpecies = Species.All.FirstOrDefault(sp => sp.Name == _store.LastSpecies);
             if (lastSpecies != null) cmbSpecies.SelectedItem = lastSpecies;
             RefreshCityList(_store.Cities.FirstOrDefault(c => c.Name == _store.LastCity) ?? _store.Cities.FirstOrDefault());

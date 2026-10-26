@@ -46,7 +46,6 @@ namespace NaRyby_win
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
@@ -54,10 +53,6 @@ namespace NaRyby_win
             };
             _grid.RowTemplate.Height = 30;
             _grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
-            _grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(230, 235, 242);
-            _grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(230, 235, 242);
-            _grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(200, 220, 245);
-            _grid.DefaultCellStyle.SelectionForeColor = Color.Black;
             _grid.CellDoubleClick += (s, e) => ChooseRow(e.RowIndex);
             _grid.KeyDown += (s, e) =>
             {
@@ -66,14 +61,13 @@ namespace NaRyby_win
                 ChooseRow(_grid.CurrentRow.Index);
             };
 
-            _status = new Label
+            _status = Theme.Dim(new Label
             {
                 Dock = DockStyle.Bottom,
                 Height = 28,
                 TextAlign = ContentAlignment.MiddleLeft,
-                ForeColor = Color.DimGray,
                 Text = "Pobieram prognozy dla " + cities.Count + " miejscowości..."
-            };
+            });
             var info = new Label
             {
                 Dock = DockStyle.Top,
@@ -84,6 +78,7 @@ namespace NaRyby_win
             Controls.Add(_grid);
             Controls.Add(info);
             Controls.Add(_status);
+            Theme.Apply(this);
         }
 
         protected override async void OnShown(EventArgs e)

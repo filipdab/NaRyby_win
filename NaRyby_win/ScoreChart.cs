@@ -11,11 +11,6 @@ namespace NaRyby_win
     /// </summary>
     public class ScoreChart : Control
     {
-        private static readonly Color NightColor = Color.FromArgb(232, 236, 246);
-        private static readonly Color BestColor = Color.FromArgb(215, 240, 215);
-        private static readonly Color GridColor = Color.FromArgb(225, 225, 225);
-        private static readonly Color PressureColor = Color.FromArgb(40, 90, 200);
-
         private readonly ToolTip _toolTip = new ToolTip();
         private DayData _day;
         private int _hoverIndex = -1;
@@ -24,7 +19,7 @@ namespace NaRyby_win
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
                      ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-            BackColor = Color.White;
+            BackColor = Theme.Surface;
             Font = new Font("Segoe UI", 8.25f);
         }
 
@@ -49,10 +44,11 @@ namespace NaRyby_win
         {
             var g = e.Graphics;
             g.Clear(BackColor);
+            Color nightColor = Theme.ChartNight, bestColor = Theme.ChartBest, pressureColor = Theme.ChartPressure;
 
             if (_day == null || _day.Hours.Count == 0)
             {
-                TextRenderer.DrawText(g, "Brak danych – wybierz miejscowość.", Font, ClientRectangle, Color.Gray,
+                TextRenderer.DrawText(g, "Brak danych – wybierz miejscowość.", Font, ClientRectangle, Theme.DimText,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 return;
             }
@@ -69,19 +65,19 @@ namespace NaRyby_win
                 bool isNight = h.Time.AddHours(1) <= _day.Sunrise || h.Time >= _day.Sunset;
                 bool isBest = _day.BestLength > 0 && h.Time >= _day.BestStart && h.Time < _day.BestStart.AddHours(_day.BestLength);
                 if (isBest)
-                    using (var b = new SolidBrush(BestColor)) g.FillRectangle(b, column);
+                    using (var b = new SolidBrush(bestColor)) g.FillRectangle(b, column);
                 else if (isNight)
-                    using (var b = new SolidBrush(NightColor)) g.FillRectangle(b, column);
+                    using (var b = new SolidBrush(nightColor)) g.FillRectangle(b, column);
             }
 
             // Siatka i oś ocen.
-            using (var pen = new Pen(GridColor))
+            using (var pen = new Pen(Theme.ChartGrid))
             {
                 for (int v = 0; v <= 100; v += 25)
                 {
                     float y = ScoreY(area, v);
                     g.DrawLine(pen, area.Left, y, area.Right, y);
-                    TextRenderer.DrawText(g, v.ToString(), Font, new Rectangle(0, (int)y - 8, area.Left - 4, 16), Color.DimGray,
+                    TextRenderer.DrawText(g, v.ToString(), Font, new Rectangle(0, (int)y - 8, area.Left - 4, 16), Theme.DimText,
                         TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
                 }
             }
@@ -105,34 +101,34 @@ namespace NaRyby_win
                 (float)(area.Bottom - (h.Pressure - pMin) / (pMax - pMin) * area.Height))).ToArray();
             g.SmoothingMode = SmoothingMode.AntiAlias;
             if (points.Length > 1)
-                using (var pen = new Pen(PressureColor, 2f)) g.DrawLines(pen, points);
+                using (var pen = new Pen(pressureColor, 2f)) g.DrawLines(pen, points);
             g.SmoothingMode = SmoothingMode.Default;
-            TextRenderer.DrawText(g, pMax.ToString("0"), Font, new Point(area.Right + 4, area.Top - 7), PressureColor);
-            TextRenderer.DrawText(g, pMin.ToString("0"), Font, new Point(area.Right + 4, area.Bottom - 7), PressureColor);
-            TextRenderer.DrawText(g, "hPa", Font, new Point(area.Right + 4, area.Top + area.Height / 2 - 7), PressureColor);
+            TextRenderer.DrawText(g, pMax.ToString("0"), Font, new Point(area.Right + 4, area.Top - 7), pressureColor);
+            TextRenderer.DrawText(g, pMin.ToString("0"), Font, new Point(area.Right + 4, area.Bottom - 7), pressureColor);
+            TextRenderer.DrawText(g, "hPa", Font, new Point(area.Right + 4, area.Top + area.Height / 2 - 7), pressureColor);
 
             // Godziny na osi X.
             int step = slot < 22 ? 3 : 1;
             for (int i = 0; i < hours.Count; i += step)
             {
                 var rect = new Rectangle((int)(area.Left + i * slot - 10), area.Bottom + 3, (int)slot + 20, 16);
-                TextRenderer.DrawText(g, hours[i].Time.ToString("HH"), Font, rect, Color.DimGray, TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(g, hours[i].Time.ToString("HH"), Font, rect, Theme.DimText, TextFormatFlags.HorizontalCenter);
             }
 
             // Legenda.
             int lx = area.Left;
             DrawLegendBox(g, ref lx, FishingAdvisor.ScoreColor(80), "ocena brań");
-            DrawLegendBox(g, ref lx, BestColor, "najlepsze okno");
-            DrawLegendBox(g, ref lx, NightColor, "noc");
-            using (var pen = new Pen(PressureColor, 2f)) g.DrawLine(pen, lx, 10, lx + 14, 10);
-            TextRenderer.DrawText(g, "ciśnienie", Font, new Point(lx + 18, 3), Color.DimGray);
+            DrawLegendBox(g, ref lx, bestColor, "najlepsze okno");
+            DrawLegendBox(g, ref lx, nightColor, "noc");
+            using (var pen = new Pen(pressureColor, 2f)) g.DrawLine(pen, lx, 10, lx + 14, 10);
+            TextRenderer.DrawText(g, "ciśnienie", Font, new Point(lx + 18, 3), Theme.DimText);
         }
 
         private void DrawLegendBox(Graphics g, ref int x, Color color, string text)
         {
             using (var b = new SolidBrush(color)) g.FillRectangle(b, x, 4, 12, 12);
-            g.DrawRectangle(Pens.Silver, x, 4, 12, 12);
-            TextRenderer.DrawText(g, text, Font, new Point(x + 16, 3), Color.DimGray);
+            using (var pen = new Pen(Theme.ChartLegendBorder)) g.DrawRectangle(pen, x, 4, 12, 12);
+            TextRenderer.DrawText(g, text, Font, new Point(x + 16, 3), Theme.DimText);
             x += 16 + TextRenderer.MeasureText(text, Font).Width + 12;
         }
 
