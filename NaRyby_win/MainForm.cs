@@ -521,6 +521,12 @@ namespace NaRyby_win
             if (today != null)
                 sb.AppendLine(string.Format("Wschód słońca {0:HH:mm}, zachód {1:HH:mm}", today.Sunrise, today.Sunset));
             sb.AppendLine(string.Format("Księżyc: {0} ({1}%)", MoonPhase.Name(moonAge), MoonPhase.Illumination(moonAge)));
+            string hydro = Reports.HydroText(f.Hydro);
+            if (hydro != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine(hydro);
+            }
             sb.AppendLine();
             if (nowHour != null)
                 sb.AppendLine(string.Format("Brania teraz ({0}): {1}/100\n{2} {3}", SelectedSpecies.Name.ToLower(), nowHour.Score,

@@ -16,7 +16,7 @@ namespace NaRyby_win
     {
         private const string TimeFormat = "yyyy-MM-dd'T'HH:mm";
 
-        private static readonly HttpClient Http = CreateClient();
+        internal static readonly HttpClient Http = CreateClient();
 
         private static HttpClient CreateClient()
         {
@@ -57,6 +57,8 @@ namespace NaRyby_win
                 "&timezone=auto&past_days=3&forecast_days=7&wind_speed_unit=kmh",
                 city.Latitude, city.Longitude);
 
+            // Stan wody pobieramy równolegle; jego brak nie przeszkadza w prognozie.
+            var hydroTask = NearestHydroAsync(city);
             var dto = await GetJsonAsync<ForecastResponse>(url).ConfigureAwait(false);
             if (dto.Hourly == null || dto.Daily == null || dto.Current == null)
                 throw new InvalidOperationException("Serwer zwrócił niekompletne dane.");
@@ -122,7 +124,20 @@ namespace NaRyby_win
                 if (day != null) day.Hours.Add(hour);
             }
 
+            forecast.Hydro = await hydroTask.ConfigureAwait(false);
             return forecast;
+        }
+
+        private static async Task<HydroStation> NearestHydroAsync(City city)
+        {
+            try
+            {
+                return await HydroService.NearestAsync(city, DateTime.Now).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private static double? Value(double?[] values, int index)

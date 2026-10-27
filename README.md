@@ -54,6 +54,8 @@ xattr -dr com.apple.quarantine /Applications/NaRyby.app
 - **Udostępnianie** – prognoza jako tekst do schowka (do wklejenia w komunikatorze)
   albo obraz okna w PNG.
 - **Temperatura powietrza i wody** – osobne kolumny w tabeli dni.
+- **Stan wody w rzece** – ostatni pomiar z najbliższego wodowskazu IMGW (do 25 km od łowiska)
+  wraz z odległością do stanu ostrzegawczego, a jeśli stacja mierzy, także z temperaturą wody.
 - **Automatyczne odświeżanie** co 30 minut.
 - **Ciemny motyw** – przycisk „Motyw” pozwala wybrać jasny lub ciemny wygląd albo „Jak w systemie”
   (wtedy aplikacja przełącza się razem z ustawieniem Windows / macOS). Wybór jest zapamiętywany.
@@ -77,10 +79,13 @@ Każda godzina dostaje punkty na podstawie popularnej wiedzy wędkarskiej:
 | Zachmurzenie | pochmurne niebo sprzyja drapieżnikom |
 | Sezon | szczyt sezonu podnosi ocenę; w okresie ochronnym ocena wynosi 0 |
 | Księżyc | nów i pełnia podnoszą ocenę |
+| Stan wody | stan ostrzegawczy lub alarmowy na wodowskazie do 10 km od łowiska obniża ocenę przez 2 doby od pomiaru |
 
 Temperatura wody nie jest mierzona, tylko szacowana ze średniej temperatury powietrza
 z ostatnich 3 dni. Preferencje gatunków są w [`Species.cs`](NaRyby_win/Species.cs),
 a algorytm oceny w [`FishingAdvisor.cs`](NaRyby_win/FishingAdvisor.cs).
+Stan wody pochodzi z [publicznego API IMGW-PIB](https://danepubliczne.imgw.pl) ([`Hydro.cs`](NaRyby_win/Hydro.cs)).
+Źródłem pochodzenia danych hydrologicznych jest Instytut Meteorologii i Gospodarki Wodnej – Państwowy Instytut Badawczy.
 
 > [!NOTE]
 > Ocena to szacunek, a nie gwarancja brań. Okresy ochronne mają charakter informacyjny –

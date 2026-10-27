@@ -80,6 +80,7 @@ namespace NaRyby_mac
     public class AboutWindow : Window
     {
         private const string WeatherUrl = "https://open-meteo.com";
+        private const string HydroUrl = "https://danepubliczne.imgw.pl";
 
         private AboutWindow()
         {
@@ -126,6 +127,7 @@ namespace NaRyby_mac
             panel.Children.Add(new TextBlock { Text = "Autor: Filip Dąbrowski", FontWeight = FontWeight.Bold });
             panel.Children.Add(MakeLink("Kod źródłowy: ", "github.com/filipdab/NaRyby_win", Reports.RepoUrl));
             panel.Children.Add(MakeLink("Dane pogodowe: ", "Open-Meteo.com", WeatherUrl));
+            panel.Children.Add(MakeLink("Stan wody: ", "Instytut Meteorologii i Gospodarki Wodnej – PIB", HydroUrl));
             panel.Children.Add(new TextBlock { Text = "Licencja MIT · © 2026 Filip Dąbrowski", Foreground = Ui.DimGray });
             panel.Children.Add(new TextBlock
             {

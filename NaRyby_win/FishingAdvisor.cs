@@ -14,6 +14,11 @@ namespace NaRyby_win
         private const int WindowLength = 3;
         private const int WaterLagHours = 72;
 
+        // Wezbranie na wodowskazie wpływa na ocenę tylko blisko łowiska i przez 2 doby od pomiaru –
+        // dalej to już tylko informacja, bo prognozy stanu wody nie mamy.
+        private const double HydroScoreDistanceKm = 10;
+        private const int HydroScoreHours = 48;
+
         public static void Analyze(Forecast forecast, Species species)
         {
             EstimateWaterTemperature(forecast.Hours);
@@ -34,7 +39,7 @@ namespace NaRyby_win
             {
                 var candidates = Candidates(day, now);
                 ScoreDay(day, candidates);
-                BuildReasons(day, species);
+                BuildReasons(day, species, forecast.Hydro);
 
                 day.SpeciesRanking.Clear();
                 foreach (var r in ranking)
@@ -84,8 +89,21 @@ namespace NaRyby_win
                 DayData day;
                 days.TryGetValue(hours[i].Time.Date, out day);
                 scores[i] = ScoreHour(hours, i, day, species);
+                if (scores[i] > 0) scores[i] = Math.Max(0, scores[i] - HighWaterPenalty(forecast.Hydro, hours[i].Time));
             }
             return scores;
+        }
+
+        /// <summary>Wysoka, mętna i szybka woda przy stanie ostrzegawczym lub alarmowym psuje brania.</summary>
+        private static int HighWaterPenalty(HydroStation hydro, DateTime time)
+        {
+            if (!AffectsScore(hydro) || time > hydro.LevelTime.AddHours(HydroScoreHours)) return 0;
+            return hydro.IsAlarm ? 25 : hydro.IsWarning ? 12 : 0;
+        }
+
+        private static bool AffectsScore(HydroStation hydro)
+        {
+            return hydro != null && hydro.DistanceKm <= HydroScoreDistanceKm;
         }
 
         private static int ScoreHour(List<HourData> hours, int i, DayData day, Species sp)
@@ -210,7 +228,7 @@ namespace NaRyby_win
             day.WaterTemperature = day.Hours.Average(h => h.WaterTemperature);
         }
 
-        private static void BuildReasons(DayData day, Species sp)
+        private static void BuildReasons(DayData day, Species sp, HydroStation hydro)
         {
             var r = day.Reasons;
             r.Clear();
@@ -251,6 +269,14 @@ namespace NaRyby_win
             else r.Add("✔ Bez opadów.");
 
             if (day.Hours.Any(h => h.WeatherCode >= 95)) r.Add("⚠ Ryzyko burzy – nie łów z wędką węglową w czasie burzy!");
+
+            if (AffectsScore(hydro) && day.Date <= hydro.LevelTime.AddHours(HydroScoreHours).Date)
+            {
+                if (hydro.IsAlarm)
+                    r.Add(string.Format("✖ Stan alarmowy ({0}: {1} cm) – wezbranie, mętna i rwąca woda, uważaj przy brzegu.", hydro.Name, hydro.Level));
+                else if (hydro.IsWarning)
+                    r.Add(string.Format("⚠ Stan ostrzegawczy ({0}: {1} cm) – wysoka, mętna woda; szukaj ryb w spokojnych zatokach i starorzeczach.", hydro.Name, hydro.Level));
+            }
 
             int season = sp.SeasonBonus[day.Date.Month - 1];
             if (!sp.IsGeneral && season >= 6) r.Add(string.Format("✔ {0} to szczyt sezonu na {1}.", Capitalize(MonthNominative(day.Date.Month)), sp.Accusative));
