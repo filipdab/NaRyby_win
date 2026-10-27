@@ -119,5 +119,8 @@ namespace NaRyby_win
         public List<HourData> Hours { get; private set; }
         public List<DayData> Days { get; private set; }
         public DateTime FetchedAt { get; set; }
+
+        /// <summary>Najbliższy wodowskaz IMGW albo null (brak stacji w pobliżu lub błąd pobierania).</summary>
+        public HydroStation Hydro { get; set; }
     }
 }

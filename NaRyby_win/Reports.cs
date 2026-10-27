@@ -121,6 +121,23 @@ namespace NaRyby_win
 
         #endregion
 
+        #region Stan wody
+
+        /// <summary>Opis najbliższego wodowskazu do panelu „Warunki teraz” albo null, gdy stacji brak.</summary>
+        public static string HydroText(HydroStation h)
+        {
+            if (h == null) return null;
+            var sb = new StringBuilder();
+            sb.AppendLine("Stan wody (" + HydroService.SourceName + "): " + h.Name);
+            sb.Append(string.Format("{0}{1} cm – {2}, pomiar {3:d.MM HH:mm}",
+                h.IsWarning ? "⚠ " : "", h.Level, h.LevelStatusText, h.LevelTime));
+            if (h.WaterTemperature.HasValue)
+                sb.Append(string.Format("\nWoda (pomiar na stacji): {0:0.0} °C", h.WaterTemperature.Value));
+            return sb.ToString();
+        }
+
+        #endregion
+
         #region Tekst do udostępnienia
 
         /// <summary>Prognoza na 7 dni jako zwykły tekst – do wklejenia w komunikatorze lub e-mailu.</summary>
@@ -144,6 +161,13 @@ namespace NaRyby_win
                     d == best ? "★ " : "", DayName(d.Date, now), FishingAdvisor.Stars(d.Score), d.Score, d.BestWindowText));
                 sb.AppendLine(string.Format("   powietrze {0:0}°/{1:0}°C, woda ok. {2:0}°C, wiatr do {3:0} km/h, opady {4:0.#} mm",
                     d.TempMin, d.TempMax, d.WaterTemperature, d.WindMax, d.PrecipitationSum));
+            }
+
+            string hydro = HydroText(f.Hydro);
+            if (hydro != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine(hydro);
             }
 
             sb.AppendLine();

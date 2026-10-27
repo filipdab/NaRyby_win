@@ -10,12 +10,13 @@ namespace NaRyby_win
     public class AboutForm : Form
     {
         private const string WeatherUrl = "https://open-meteo.com";
+        private const string HydroUrl = "https://danepubliczne.imgw.pl";
 
         private AboutForm()
         {
             Text = "O mnie";
             Font = new Font("Segoe UI", 9f);
-            ClientSize = new Size(440, 330);
+            ClientSize = new Size(440, 354);
             StartPosition = FormStartPosition.CenterParent;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MinimizeBox = false;
@@ -60,23 +61,24 @@ namespace NaRyby_win
             };
             var repo = MakeLink("Kod źródłowy: ", "github.com/filipdab/NaRyby_win", Reports.RepoUrl, new Point(20, 176));
             var weather = MakeLink("Dane pogodowe: ", "Open-Meteo.com", WeatherUrl, new Point(20, 200));
+            var hydro = MakeLink("Stan wody: ", "Instytut Meteorologii i Gospodarki Wodnej – PIB", HydroUrl, new Point(20, 224));
             var license = Theme.Dim(new Label
             {
                 Text = "Licencja MIT · © 2026 Filip Dąbrowski",
-                Location = new Point(20, 224),
+                Location = new Point(20, 248),
                 AutoSize = true
             });
             var note = Theme.Dim(new Label
             {
                 Text = "Prognoza ma charakter orientacyjny – ryby nie zawsze czytają prognozy. Połamania kija!",
-                Location = new Point(20, 252),
+                Location = new Point(20, 276),
                 Size = new Size(400, 34),
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Italic)
             });
 
-            var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Size = new Size(80, 27), Location = new Point(340, 292) };
+            var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Size = new Size(80, 27), Location = new Point(340, 316) };
 
-            Controls.AddRange(new Control[] { icon, title, subtitle, description, author, repo, weather, license, note, ok });
+            Controls.AddRange(new Control[] { icon, title, subtitle, description, author, repo, weather, hydro, license, note, ok });
             AcceptButton = ok;
             CancelButton = ok;
             Theme.Apply(this);

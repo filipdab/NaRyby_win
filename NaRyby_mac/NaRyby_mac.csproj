@@ -26,6 +26,7 @@
     <Compile Include="../NaRyby_win/MoonPhase.cs" Link="Shared/MoonPhase.cs" />
     <Compile Include="../NaRyby_win/CityStore.cs" Link="Shared/CityStore.cs" />
     <Compile Include="../NaRyby_win/WeatherService.cs" Link="Shared/WeatherService.cs" />
+    <Compile Include="../NaRyby_win/Hydro.cs" Link="Shared/Hydro.cs" />
     <Compile Include="../NaRyby_win/FishingAdvisor.cs" Link="Shared/FishingAdvisor.cs" />
     <Compile Include="../NaRyby_win/Species.cs" Link="Shared/Species.cs" />
     <Compile Include="../NaRyby_win/Reports.cs" Link="Shared/Reports.cs" />
