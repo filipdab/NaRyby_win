@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Wersja webowa NaRyby (ASP.NET Core, .NET 8) – np. na Raspberry Pi, otwierana w przeglądarce telefonu.
+    Logika (pogoda, ocena brań, gatunki, lista miejscowości) jest współdzielona z wersją Windows –
+    pliki są dołączone z katalogu NaRyby_win, tu jest tylko serwer (API JSON) i strona w wwwroot.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>NaRyby_web</AssemblyName>
+    <RootNamespace>NaRyby_web</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Product>NaRyby</Product>
+    <Authors>Filip Dąbrowski</Authors>
+    <!-- ServicePointManager we wspólnym WeatherService jest potrzebny tylko na .NET Framework. -->
+    <NoWarn>$(NoWarn);SYSLIB0014</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../NaRyby_win/Models.cs" Link="Shared/Models.cs" />
+    <Compile Include="../NaRyby_win/MoonPhase.cs" Link="Shared/MoonPhase.cs" />
+    <Compile Include="../NaRyby_win/CityStore.cs" Link="Shared/CityStore.cs" />
+    <Compile Include="../NaRyby_win/WeatherService.cs" Link="Shared/WeatherService.cs" />
+    <Compile Include="../NaRyby_win/Hydro.cs" Link="Shared/Hydro.cs" />
+    <Compile Include="../NaRyby_win/FishingAdvisor.cs" Link="Shared/FishingAdvisor.cs" />
+    <Compile Include="../NaRyby_win/Species.cs" Link="Shared/Species.cs" />
+    <Compile Include="../NaRyby_win/Reports.cs" Link="Shared/Reports.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NaRyby – kiedy jechać na ryby?</title>
+  <meta name="description" content="Prognoza brań na 7 dni dla wędkarzy">
+  <meta name="theme-color" content="#1f6fc5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#15191f" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="NaRyby">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row">
+      <a class="brand" href="#/"><img src="favicon.png" alt="" width="28" height="28"><span>NaRyby</span></a>
+      <button id="btnRefresh" class="icon-btn" type="button" aria-label="Odśwież prognozę" title="Odśwież">⟳</button>
+      <button id="btnShare" class="icon-btn" type="button" aria-label="Udostępnij prognozę" title="Udostępnij">⇪</button>
+    </div>
+    <div class="pickers">
+      <label class="picker"><span>Łowisko</span><select id="selCity" aria-label="Łowisko"></select></label>
+      <label class="picker"><span>Gatunek</span><select id="selSpecies" aria-label="Gatunek ryby"></select></label>
+    </div>
+    <nav class="tabs" aria-label="Widoki">
+      <a href="#/" data-view="home">Prognoza</a>
+      <a href="#/compare" data-view="compare">Porównaj</a>
+      <a href="#/protection" data-view="protection">Ochrona</a>
+      <a href="#/cities" data-view="cities">Miejscowości</a>
+    </nav>
+  </header>
+
+  <main id="view" aria-live="polite"></main>
+
+  <footer class="footer">
+    <p>Pogoda: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>
+      (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>).
+      Źródłem pochodzenia danych hydrologicznych jest Instytut Meteorologii i Gospodarki Wodnej – Państwowy Instytut Badawczy
+      (<a href="https://danepubliczne.imgw.pl" target="_blank" rel="noopener">IMGW-PIB</a>).</p>
+    <p>Ocena to szacunek, a nie gwarancja brań. <a href="https://github.com/filipdab/NaRyby_win" target="_blank" rel="noopener">NaRyby</a> · <span id="status"></span></p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <dialog id="shareDialog" class="sheet">
+    <form method="dialog">
+      <h2>Prognoza jako tekst</h2>
+      <p class="dim">Zaznacz i skopiuj tekst, a potem wklej go w komunikatorze.</p>
+      <textarea id="shareText" rows="14" readonly></textarea>
+      <div class="sheet-buttons">
+        <button type="button" id="btnCopy" class="btn primary">Kopiuj</button>
+        <button value="close" class="btn">Zamknij</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
