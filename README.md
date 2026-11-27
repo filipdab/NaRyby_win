@@ -3,7 +3,7 @@
 # NaRyby – kiedy jechać na ryby?
 
 [![Licencja: MIT](https://img.shields.io/badge/licencja-MIT-green.svg)](LICENSE)
-![Platforma: Windows | macOS](https://img.shields.io/badge/platforma-Windows%20%7C%20macOS-blue.svg)
+![Platforma: Windows | macOS | WWW](https://img.shields.io/badge/platforma-Windows%20%7C%20macOS%20%7C%20WWW-blue.svg)
 ![.NET Framework 4.7.2](https://img.shields.io/badge/.NET%20Framework-4.7.2-purple.svg)
 
 Okienkowa aplikacja dla wędkarzy na Windows i macOS. Pobiera prognozę pogody dla wybranej
@@ -129,6 +129,56 @@ dotnet run --project NaRyby_mac        # uruchomienie z kodu
 Skrypt buduje samodzielne paczki (z wbudowanym .NET) i podpisuje je podpisem ad-hoc, którego
 wymagają Maki z procesorem Apple. Ikonę macOS (`NaRyby_mac/macos/NaRyby.icns`) generuje
 [`tools/make_icon_mac.py`](tools/make_icon_mac.py).
+
+### Wersja webowa (Raspberry Pi, iPhone)
+
+`NaRyby_web` to ta sama logika podana jako strona WWW (ASP.NET Core, .NET 8): serwer zwraca prognozę
+w JSON, a strona w `NaRyby_web/wwwroot` (czysty HTML/JS/SVG, bez zewnętrznych bibliotek) jest
+dopasowana do ekranu telefonu – karty 7 dni, wykres godzinowy, porady, stan wody IMGW, porównanie
+łowisk, okresy ochronne, udostępnianie tekstu i jasny/ciemny motyw zgodnie z systemem.
+W Safari „Udostępnij → Do ekranu początkowego” dodaje ją jak aplikację z ikoną NaRyby.
+
+Na Raspberry Pi (64-bit Raspberry Pi OS) wystarczy .NET 8 SDK:
+
+```bash
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 8.0   # instaluje do ~/.dotnet
+~/.dotnet/dotnet publish NaRyby_web -c Release -o ~/naryby-web
+cd ~/naryby-web && ~/.dotnet/dotnet NaRyby_web.dll                           # http://0.0.0.0:5080
+```
+
+Strona jest dostępna pod `http://<adres Pi>:5080` (np. adresem z sieci ZeroTier). Port zmienia zmienna
+`ASPNETCORE_URLS`. Lista łowisk jest wspólna dla wszystkich urządzeń i zapisywana na serwerze
+w `~/.config/NaRyby/miasta.txt`, a wybrane łowisko i gatunek zapamiętuje przeglądarka.
+Prognozy są trzymane w pamięci przez 15 minut.
+
+Do autostartu służy usługa systemd, np. `/etc/systemd/system/naryby.service`:
+
+```ini
+[Unit]
+Description=NaRyby – prognoza brań (wersja webowa, port 5080)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/naryby-web
+ExecStart=/home/pi/.dotnet/dotnet /home/pi/naryby-web/NaRyby_web.dll
+Environment=DOTNET_ROOT=/home/pi/.dotnet
+Environment=ASPNETCORE_URLS=http://0.0.0.0:5080
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl enable --now naryby
+```
+
+Po zmianach w kodzie: ponownie `dotnet publish ...`, a potem `sudo systemctl restart naryby`.
+Strona działa po zwykłym http, więc Safari nie udostępnia jej systemowego arkusza „Udostępnij”
+ani schowka – przycisk udostępniania pokazuje wtedy tekst prognozy z przyciskiem „Kopiuj”.
 
 ## Struktura projektu
 
